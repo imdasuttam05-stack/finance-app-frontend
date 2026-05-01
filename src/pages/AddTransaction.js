@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { API } from "../api";
 
-const categories = {
+const expenseCategories = {
   food: ["groceries", "restaurant", "snacks"],
   transport: ["fuel", "bus", "cab"],
   shopping: ["clothes", "electronics"],
@@ -11,7 +11,15 @@ const categories = {
   others: ["misc"],
 };
 
+const incomeCategories = ["salary", "business", "gift", "interest", "other"];
+const investmentTypes = ["FD", "SIP", "Stocks", "Crypto", "Gold"];
+
+const today = new Date().toISOString().slice(0, 10);
+
 export default function AddTransaction() {
+  const [persons, setPersons] = useState([]);
+  const [saving, setSaving] = useState(false);
+
   const [form, setForm] = useState({
     type: "income",
     category: "",
@@ -19,16 +27,44 @@ export default function AddTransaction() {
     subType: "",
     amount: "",
     note: "",
-    person: "", // 🔥 NEW
+    person: "",
+    date: today,
   });
 
-  const [saving, setSaving] = useState(false);
+  // 🔄 LOAD LEDGERS
+  useEffect(() => {
+    API.get("/persons")
+      .then((res) => setPersons(res.data || []))
+      .catch(() => setPersons([]));
+  }, []);
 
+  // 🔄 TYPE CHANGE RESET
+  const handleTypeChange = (value) => {
+    setForm({
+      type: value,
+      category: "",
+      subCategory: "",
+      subType: "",
+      amount: "",
+      note: "",
+      person: "",
+      date: form.date,
+    });
+  };
+
+  // 💾 SUBMIT
   const submit = async () => {
     try {
       setSaving(true);
-      await API.post("/transactions", form);
-      alert("Saved");
+
+      const payload = {
+        ...form,
+        amount: Number(form.amount || 0),
+      };
+
+      await API.post("/transactions", payload);
+
+      alert("Saved ✔");
 
       setForm({
         type: "income",
@@ -37,11 +73,12 @@ export default function AddTransaction() {
         subType: "",
         amount: "",
         note: "",
-        person: "", // reset
+        person: "",
+        date: today,
       });
     } catch (err) {
-      console.error("Failed to save transaction:", err);
-      alert("Save failed");
+      console.error(err);
+      alert(err.response?.data?.error || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -49,174 +86,198 @@ export default function AddTransaction() {
 
   return (
     <div className="page">
+
       <div className="page-header">
         <div>
           <h1>Add Transaction</h1>
-          <p>Create a new entry with type, amount, and optional note.</p>
+          <p>Income, Expense, Loan & Investment entry</p>
         </div>
-        <span className="pill">{saving ? "Saving…" : "Form ready"}</span>
+        <span className="pill">{saving ? "Saving…" : "Ready"}</span>
       </div>
 
       <div className="card">
         <div className="card-title">Entry Details</div>
 
-        <div className="form" style={{ marginTop: 12 }}>
-          <div className="grid">
+        <div className="grid">
 
-            {/* TYPE */}
-            <div className="field" style={{ gridColumn: "span 4" }}>
-              <div className="label">Type</div>
-              <select
-                className="select"
-                value={form.type}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    type: e.target.value,
-                    category: "",
-                    subCategory: "",
-                    subType: "",
-                  })
-                }
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-                <option value="investment">Investment</option>
-                <option value="loan">Loan</option>
-              </select>
-            </div>
-
-            {/* EXPENSE CATEGORY */}
-            {form.type === "expense" && (
-              <>
-                <div className="field" style={{ gridColumn: "span 4" }}>
-                  <div className="label">Category</div>
-                  <select
-                    className="select"
-                    value={form.category}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        category: e.target.value,
-                        subCategory: "",
-                      })
-                    }
-                  >
-                    <option value="">Select Category</option>
-                    {Object.keys(categories).map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="field" style={{ gridColumn: "span 4" }}>
-                  <div className="label">Subcategory</div>
-                  <select
-                    className="select"
-                    value={form.subCategory}
-                    onChange={(e) =>
-                      setForm({ ...form, subCategory: e.target.value })
-                    }
-                    disabled={!form.category}
-                  >
-                    <option value="">Select SubCategory</option>
-                    {categories[form.category]?.map((sub) => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* LOAN */}
-            {form.type === "loan" && (
-              <>
-                <div className="field" style={{ gridColumn: "span 4" }}>
-                  <div className="label">Loan Direction</div>
-                  <select
-                    className="select"
-                    value={form.subType}
-                    onChange={(e) =>
-                      setForm({ ...form, subType: e.target.value })
-                    }
-                  >
-                    <option value="">Asset / Liability</option>
-                    <option value="asset">You Gave (Will Receive)</option>
-                    <option value="liability">You Took (Have to Pay)</option>
-                  </select>
-                </div>
-
-                {/* 🔥 NEW PERSON FIELD */}
-                <div className="field" style={{ gridColumn: "span 4" }}>
-                  <div className="label">Person Name</div>
-                  <input
-                    className="input"
-                    placeholder="e.g. Ram / Shyam"
-                    value={form.person}
-                    onChange={(e) =>
-                      setForm({ ...form, person: e.target.value })
-                    }
-                  />
-                </div>
-              </>
-            )}
-
-            {/* AMOUNT */}
-            <div className="field" style={{ gridColumn: "span 4" }}>
-              <div className="label">Amount</div>
-              <input
-                className="input"
-                type="number"
-                placeholder="Amount"
-                value={form.amount}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    amount: e.target.value === "" ? "" : Number(e.target.value),
-                  })
-                }
-              />
-            </div>
+          {/* TYPE */}
+          <div className="field" style={{ gridColumn: "span 4" }}>
+            <div className="label">Type</div>
+            <select
+              className="select"
+              value={form.type}
+              onChange={(e) => handleTypeChange(e.target.value)}
+            >
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+              <option value="loan">Loan</option>
+              <option value="investment">Investment</option>
+            </select>
           </div>
 
-          {/* NOTE */}
-          <div className="field">
-            <div className="label">Note (optional)</div>
-            <textarea
-              className="textarea"
-              placeholder="Add a short note..."
-              value={form.note}
+          {/* DATE */}
+          <div className="field" style={{ gridColumn: "span 4" }}>
+            <div className="label">Date</div>
+            <input
+              type="date"
+              className="input"
+              value={form.date}
               onChange={(e) =>
-                setForm({ ...form, note: e.target.value })
+                setForm({ ...form, date: e.target.value })
               }
             />
           </div>
 
-          {/* BUTTONS */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn" onClick={submit} disabled={saving}>
-              {saving ? "Saving…" : "Save"}
-            </button>
+          {/* INCOME */}
+          {form.type === "income" && (
+            <div className="field" style={{ gridColumn: "span 4" }}>
+              <div className="label">Income Category</div>
+              <select
+                className="select"
+                value={form.category}
+                onChange={(e) =>
+                  setForm({ ...form, category: e.target.value })
+                }
+              >
+                <option value="">Select</option>
+                {incomeCategories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-            <button
-              className="btn secondary"
-              type="button"
-              onClick={() =>
-                setForm({
-                  type: "income",
-                  category: "",
-                  subCategory: "",
-                  subType: "",
-                  amount: "",
-                  note: "",
-                  person: "",
-                })
+          {/* EXPENSE */}
+          {form.type === "expense" && (
+            <>
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Expense Category</div>
+                <select
+                  className="select"
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      category: e.target.value,
+                      subCategory: "",
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {Object.keys(expenseCategories).map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Sub Category</div>
+                <select
+                  className="select"
+                  value={form.subCategory}
+                  disabled={!form.category}
+                  onChange={(e) =>
+                    setForm({ ...form, subCategory: e.target.value })
+                  }
+                >
+                  <option value="">Select</option>
+                  {expenseCategories[form.category]?.map((sub) => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* LOAN */}
+          {form.type === "loan" && (
+            <>
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Ledger</div>
+                <select
+                  className="select"
+                  value={form.person}
+                  onChange={(e) =>
+                    setForm({ ...form, person: e.target.value })
+                  }
+                >
+                  <option value="">Select Ledger</option>
+                  {persons.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Loan Type</div>
+                <select
+                  className="select"
+                  value={form.subType}
+                  onChange={(e) =>
+                    setForm({ ...form, subType: e.target.value })
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="asset">Given</option>
+                  <option value="liability">Taken</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* INVESTMENT */}
+          {form.type === "investment" && (
+            <div className="field" style={{ gridColumn: "span 4" }}>
+              <div className="label">Investment Type</div>
+              <select
+                className="select"
+                value={form.subType}
+                onChange={(e) =>
+                  setForm({ ...form, subType: e.target.value })
+                }
+              >
+                <option value="">Select</option>
+                {investmentTypes.map((inv) => (
+                  <option key={inv} value={inv}>{inv}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* AMOUNT */}
+          <div className="field" style={{ gridColumn: "span 4" }}>
+            <div className="label">Amount</div>
+            <input
+              className="input"
+              type="number"
+              value={form.amount}
+              onChange={(e) =>
+                setForm({ ...form, amount: e.target.value })
               }
-            >
-              Reset
-            </button>
+            />
           </div>
+
         </div>
+
+        {/* NOTE */}
+        <div className="field">
+          <div className="label">Note</div>
+          <textarea
+            className="textarea"
+            value={form.note}
+            onChange={(e) =>
+              setForm({ ...form, note: e.target.value })
+            }
+          />
+        </div>
+
+        {/* BUTTON */}
+        <button className="btn" onClick={submit} disabled={saving}>
+          {saving ? "Saving…" : "Save Transaction"}
+        </button>
+
       </div>
     </div>
   );

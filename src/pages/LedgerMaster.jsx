@@ -10,7 +10,7 @@ export default function LedgerMaster() {
 
   const navigate = useNavigate();
 
-  // 📥 LOAD LEDGERS
+  // LOAD LEDGERS
   const load = async () => {
     try {
       setLoading(true);
@@ -23,7 +23,7 @@ export default function LedgerMaster() {
       const personsData = personsRes.data || [];
       const transactions = transactionsRes.data || [];
 
-      // 💰 BALANCE CALCULATION
+      // BALANCE CALCULATION
       const updated = personsData.map((p) => {
         const ledgerTx = transactions.filter(
           (t) => t.personId?._id === p._id
@@ -62,7 +62,7 @@ export default function LedgerMaster() {
     load();
   }, []);
 
-  // ➕ CREATE LEDGER
+  // CREATE LEDGER
   const createLedger = async () => {
     const trimmed = name.trim();
 
@@ -125,7 +125,7 @@ export default function LedgerMaster() {
         </div>
       </div>
 
-      {/* LEDGER LIST */}
+      {/* LIST */}
       <div className="card">
         <div className="card-title">All Ledgers</div>
 
@@ -177,7 +177,7 @@ export default function LedgerMaster() {
                   ₹ {Math.abs(p.balance).toFixed(2)}
 
                   <div style={{ fontSize: 12 }}>
-                    {p.balance >= 0 ? "পাবো" : "দেবো"}
+                    {p.balance >= 0 ? "Receivable" : "Payable"}
                   </div>
                 </div>
 

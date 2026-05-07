@@ -13,7 +13,7 @@ export default function LedgerPage() {
 
   const [loading, setLoading] = useState(true);
 
-  // 🔄 LOAD LEDGER
+  // LOAD LEDGER
   useEffect(() => {
     if (!id) return;
 
@@ -24,14 +24,14 @@ export default function LedgerPage() {
 
         let list = res.data || [];
 
-        // 📅 FILTER FROM DATE
+        // FILTER FROM DATE
         if (fromDate) {
           list = list.filter(
             (t) => new Date(t.date) >= new Date(fromDate)
           );
         }
 
-        // 📅 FILTER TO DATE
+        // FILTER TO DATE
         if (toDate) {
           list = list.filter(
             (t) => new Date(t.date) <= new Date(toDate)
@@ -53,17 +53,17 @@ export default function LedgerPage() {
 
   }, [id, fromDate, toDate]);
 
-  // 💰 TOTAL CREDIT
+  // TOTAL CREDIT
   const totalCredit = data
     .filter((t) => t.type === "income" || t.subType === "asset")
     .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-  // 💸 TOTAL DEBIT
+  // TOTAL DEBIT
   const totalDebit = data
     .filter((t) => t.type === "expense" || t.subType === "liability")
     .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-  // ⚖ BALANCE
+  // BALANCE
   const balance = totalCredit - totalDebit;
 
   return (
@@ -112,8 +112,8 @@ export default function LedgerPage() {
           gap: 10,
         }}
       >
-        <Card title="পাবো" value={totalCredit} color="green" />
-        <Card title="দেবো" value={totalDebit} color="red" />
+        <Card title="Receivable" value={totalCredit} color="green" />
+        <Card title="Payable" value={totalDebit} color="red" />
         <Card title="Balance" value={balance} color="#2563eb" />
       </div>
 
@@ -187,7 +187,6 @@ export default function LedgerPage() {
   );
 }
 
-/* 📦 CARD */
 function Card({ title, value, color }) {
   return (
     <div
@@ -213,7 +212,6 @@ function Card({ title, value, color }) {
   );
 }
 
-/* 🎨 STYLE */
 const styles = {
   row: {
     display: "flex",

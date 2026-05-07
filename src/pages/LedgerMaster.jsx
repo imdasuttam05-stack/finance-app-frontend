@@ -14,8 +14,42 @@ export default function LedgerMaster() {
   const load = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/persons");
-      setPersons(res.data || []);
+
+      const [personsRes, transactionsRes] = await Promise.all([
+        API.get("/persons"),
+        API.get("/transactions"),
+      ]);
+
+      const personsData = personsRes.data || [];
+      const transactions = transactionsRes.data || [];
+
+      // 💰 BALANCE CALCULATION
+      const updated = personsData.map((p) => {
+        const ledgerTx = transactions.filter(
+          (t) => t.personId?._id === p._id
+        );
+
+        let credit = 0;
+        let debit = 0;
+
+        ledgerTx.forEach((t) => {
+          const amount = Number(t.amount || 0);
+
+          if (t.type === "income" || t.subType === "asset") {
+            credit += amount;
+          } else {
+            debit += amount;
+          }
+        });
+
+        return {
+          ...p,
+          balance: credit - debit,
+        };
+      });
+
+      setPersons(updated);
+
     } catch (err) {
       console.error(err);
       alert("Failed to load ledger list");
@@ -36,7 +70,6 @@ export default function LedgerMaster() {
       return alert("Enter ledger name");
     }
 
-    // 🔥 duplicate check frontend side
     const exists = persons.some(
       (p) => p.name.toLowerCase() === trimmed.toLowerCase()
     );
@@ -52,9 +85,10 @@ export default function LedgerMaster() {
 
       setName("");
       load();
+
     } catch (err) {
-      console.error("CREATE ERROR:", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to create ledger");
+      console.error(err);
+      alert("Failed to create ledger");
     } finally {
       setSaving(false);
     }
@@ -63,12 +97,13 @@ export default function LedgerMaster() {
   return (
     <div className="page">
 
+      {/* HEADER */}
       <div className="page-header">
         <h1>📒 Ledger Master</h1>
         <p>Create and manage your ledger accounts</p>
       </div>
 
-      {/* ➕ CREATE */}
+      {/* CREATE */}
       <div className="card">
         <div className="card-title">Create Ledger</div>
 
@@ -90,7 +125,7 @@ export default function LedgerMaster() {
         </div>
       </div>
 
-      {/* 📋 LIST */}
+      {/* LEDGER LIST */}
       <div className="card">
         <div className="card-title">All Ledgers</div>
 
@@ -104,11 +139,48 @@ export default function LedgerMaster() {
               <div
                 key={p._id}
                 className="list-item"
-                style={{ cursor: "pointer" }}
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 10px",
+                  borderBottom: "1px solid #eee",
+                }}
                 onClick={() => navigate(`/ledger/${p._id}`)}
               >
-                <span>{p.name}</span>
-                <strong>→ Open</strong>
+
+                {/* NAME */}
+                <div>
+                  <div style={{ fontWeight: 700 }}>
+                    {p.name}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 12,
+                      opacity: 0.6,
+                    }}
+                  >
+                    Click to open ledger
+                  </div>
+                </div>
+
+                {/* BALANCE */}
+                <div
+                  style={{
+                    color: p.balance >= 0 ? "green" : "red",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
+                >
+                  ₹ {Math.abs(p.balance).toFixed(2)}
+
+                  <div style={{ fontSize: 12 }}>
+                    {p.balance >= 0 ? "পাবো" : "দেবো"}
+                  </div>
+                </div>
+
               </div>
             ))}
           </div>

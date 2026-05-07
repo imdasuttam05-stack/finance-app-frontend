@@ -1,101 +1,313 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import {
+  BrowserRouter as Router,
+
+  Routes,
+
+  Route,
+
+  Navigate,
+
+} from "react-router-dom";
+
 import "./App.css";
 
-import TopNav from "./components/TopNav";
+// ======================
+// COMPONENTS
+// ======================
 
-// 📄 Pages
-import Dashboard from "./pages/Dashboard";
-import AddTransaction from "./pages/AddTransaction";
-import LedgerMaster from "./pages/LedgerMaster";
-import LedgerPage from "./pages/LedgerPage";
-import DayBook from "./pages/DayBook";
-import MonthlyReport from "./pages/MonthlyReport";
-import EditTransaction from "./pages/EditTransaction";
-import Login from "./pages/Login";
+import TopNav
+from "./components/TopNav";
+
+// ======================
+// PAGES
+// ======================
+
+import Dashboard
+from "./pages/Dashboard";
+
+import AddTransaction
+from "./pages/AddTransaction";
+
+import LedgerMaster
+from "./pages/LedgerMaster";
+
+import LedgerPage
+from "./pages/LedgerPage";
+
+import DayBook
+from "./pages/DayBook";
+
+import MonthlyReport
+from "./pages/MonthlyReport";
+
+import EditTransaction
+from "./pages/EditTransaction";
+
+import Login
+from "./pages/Login";
+
+// ======================
+// PRIVATE ROUTE
+// ======================
+
+function PrivateRoute({
+  children,
+}) {
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+  return token
+    ? children
+    : <Navigate
+        to="/login"
+        replace
+      />;
+
+}
+
+// ======================
+// APP
+// ======================
 
 function App() {
-  const isLoggedIn = !!localStorage.getItem("token");
+
+  const isLoggedIn =
+    !!localStorage.getItem(
+      "token"
+    );
 
   return (
-    <Router>
-      <div className="app-shell">
-        
-        {/* 🔐 Hide navbar on login */}
-        {isLoggedIn && <TopNav />}
 
-        <main className="app-content">
+    <Router>
+
+      <div className="app-shell">
+
+        {/* NAVBAR */}
+
+        {isLoggedIn && (
+          <TopNav />
+        )}
+
+        {/* CONTENT */}
+
+        <main
+          className="app-content"
+        >
+
           <Routes>
 
-            {/* 🔐 Login */}
+            {/* LOGIN */}
+
             <Route
+
               path="/login"
-              element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login />}
-            />
 
-            {/* 🔁 Default redirect */}
-            <Route
-              path="/"
               element={
+
                 isLoggedIn
-                  ? <Navigate to="/dashboard" replace />
-                  : <Navigate to="/login" replace />
+
+                  ? (
+                      <Navigate
+                        to="/dashboard"
+                        replace
+                      />
+                    )
+
+                  : <Login />
+
               }
+
             />
 
-            {/* 🏠 Dashboard */}
+            {/* DEFAULT */}
+
             <Route
+
+              path="/"
+
+              element={
+
+                <Navigate
+
+                  to={
+                    isLoggedIn
+                      ? "/dashboard"
+                      : "/login"
+                  }
+
+                  replace
+
+                />
+
+              }
+
+            />
+
+            {/* DASHBOARD */}
+
+            <Route
+
               path="/dashboard"
-              element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <Dashboard />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* ➕ Add Transaction */}
+            {/* ADD TRANSACTION */}
+
             <Route
+
               path="/transactions/new"
-              element={isLoggedIn ? <AddTransaction /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <AddTransaction />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* 📒 Ledger Master */}
+            {/* LEDGER MASTER */}
+
             <Route
+
               path="/ledger"
-              element={isLoggedIn ? <LedgerMaster /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <LedgerMaster />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* 📄 Single Ledger */}
+            {/* SINGLE LEDGER */}
+
             <Route
+
               path="/ledger/:id"
-              element={isLoggedIn ? <LedgerPage /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <LedgerPage />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* 📊 Day Book */}
+            {/* DAY BOOK */}
+
             <Route
+
               path="/daybook"
-              element={isLoggedIn ? <DayBook /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <DayBook />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* 📅 Monthly Report */}
+            {/* MONTHLY */}
+
             <Route
+
               path="/monthly"
-              element={isLoggedIn ? <MonthlyReport /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <MonthlyReport />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* ✏️ Edit Transaction */}
+            {/* EDIT */}
+
             <Route
+
               path="/edit/:id"
-              element={isLoggedIn ? <EditTransaction /> : <Navigate to="/login" />}
+
+              element={
+
+                <PrivateRoute>
+
+                  <EditTransaction />
+
+                </PrivateRoute>
+
+              }
+
             />
 
-            {/* ❌ Fallback */}
+            {/* 404 */}
+
             <Route
+
               path="*"
-              element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} />}
+
+              element={
+
+                <Navigate
+
+                  to={
+                    isLoggedIn
+                      ? "/dashboard"
+                      : "/login"
+                  }
+
+                  replace
+
+                />
+
+              }
+
             />
 
           </Routes>
+
         </main>
+
       </div>
+
     </Router>
+
   );
+
 }
 
 export default App;

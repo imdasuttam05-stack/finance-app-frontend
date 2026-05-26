@@ -477,6 +477,15 @@ export default function LedgerPage() {
 
                           {t.type}
 
+                          {t.againstId ? (
+                            <div style={{ marginTop: 4 }}>
+                              Against: {t.againstId.type || "entry"}
+                              {t.againstId.amount
+                                ? ` • ₹${Number(t.againstId.amount).toFixed(2)}`
+                                : ""}
+                            </div>
+                          ) : null}
+
                         </div>
 
                       </td>

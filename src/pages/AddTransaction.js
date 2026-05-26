@@ -19,6 +19,7 @@ const today = new Date().toISOString().slice(0, 10);
 export default function AddTransaction() {
   const [persons, setPersons] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [previousEntries, setPreviousEntries] = useState([]);
 
   const [form, setForm] = useState({
     type: "income",
@@ -28,6 +29,7 @@ export default function AddTransaction() {
     amount: "",
     note: "",
     person: "",
+    againstId: "",
     date: today,
   });
 
@@ -37,6 +39,21 @@ export default function AddTransaction() {
       .then((res) => setPersons(res.data || []))
       .catch(() => setPersons([]));
   }, []);
+
+  // 🔄 FETCH PREVIOUS ENTRIES FOR SELECTED LEDGER
+  useEffect(() => {
+    if (
+      !form.person ||
+      !["payment", "received"].includes(form.type)
+    ) {
+      setPreviousEntries([]);
+      return;
+    }
+
+    API.get(`/ledger/${form.person}`)
+      .then((res) => setPreviousEntries(res.data || []))
+      .catch(() => setPreviousEntries([]));
+  }, [form.person, form.type]);
 
   // 🔄 TYPE CHANGE RESET
   const handleTypeChange = (value) => {
@@ -48,6 +65,7 @@ export default function AddTransaction() {
       amount: "",
       note: "",
       person: "",
+      againstId: "",
       date: form.date,
     });
   };
@@ -57,9 +75,17 @@ export default function AddTransaction() {
     try {
       setSaving(true);
 
+      const {
+        person,
+        againstId,
+        ...rest
+      } = form;
+
       const payload = {
-        ...form,
+        ...rest,
         amount: Number(form.amount || 0),
+        personId: person || null,
+        againstId: againstId || null,
       };
 
       await API.post("/transactions", payload);
@@ -74,6 +100,7 @@ export default function AddTransaction() {
         amount: "",
         note: "",
         person: "",
+        againstId: "",
         date: today,
       });
     } catch (err) {
@@ -112,6 +139,8 @@ export default function AddTransaction() {
               <option value="expense">Expense</option>
               <option value="loan">Loan</option>
               <option value="investment">Investment</option>
+              <option value="payment">Payment</option>
+              <option value="received">Received</option>
             </select>
           </div>
 
@@ -198,7 +227,11 @@ export default function AddTransaction() {
                   className="select"
                   value={form.person}
                   onChange={(e) =>
-                    setForm({ ...form, person: e.target.value })
+                    setForm({
+                      ...form,
+                      person: e.target.value,
+                      againstId: "",
+                    })
                   }
                 >
                   <option value="">Select Ledger</option>
@@ -222,6 +255,57 @@ export default function AddTransaction() {
                   <option value="">Select</option>
                   <option value="asset">Given</option>
                   <option value="liability">Taken</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* PAYMENT / RECEIVED */}
+          {['payment', 'received'].includes(form.type) && (
+            <>
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Ledger</div>
+                <select
+                  className="select"
+                  value={form.person}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      person: e.target.value,
+                      againstId: "",
+                    })
+                  }
+                >
+                  <option value="">Select Ledger</option>
+                  {persons.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Against entry</div>
+                <select
+                  className="select"
+                  value={form.againstId}
+                  onChange={(e) =>
+                    setForm({ ...form, againstId: e.target.value })
+                  }
+                >
+                  <option value="">No against entry</option>
+                  {previousEntries
+                    .filter((entry) =>
+                      form.type === "payment"
+                        ? entry.type === "received"
+                        : entry.type === "payment"
+                    )
+                    .map((entry) => (
+                      <option key={entry._id} value={entry._id}>
+                        {new Date(entry.date).toLocaleDateString()} — ₹{entry.amount} — {entry.note || entry.category || entry.type}
+                      </option>
+                    ))}
                 </select>
               </div>
             </>

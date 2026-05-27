@@ -6,6 +6,7 @@ import {
 import { API } from "../api";
 
 import {
+  useNavigate,
   useParams,
 } from "react-router-dom";
 
@@ -30,6 +31,10 @@ export default function LedgerPage() {
   const [loading,
     setLoading] =
     useState(true);
+  const navigate = useNavigate();
+  const [deleting,
+    setDeleting] =
+    useState("");
 
   // ======================
   // LOAD LEDGER
@@ -234,6 +239,25 @@ export default function LedgerPage() {
         0
       );
 
+  const deleteEntry = async (id) => {
+    const confirmed = window.confirm(
+      "Delete this ledger transaction?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(id);
+      await API.delete(`/transactions/${id}`);
+      setData((prev) => prev.filter((item) => item._id !== id));
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err.response?.data?.error || "Delete failed");
+    } finally {
+      setDeleting("");
+    }
+  };
+
   // ======================
   // FINAL BALANCE
   // ======================
@@ -418,6 +442,10 @@ export default function LedgerPage() {
                     Balance
                   </th>
 
+                  <th style={styles.th}>
+                    Actions
+                  </th>
+
                 </tr>
 
               </thead>
@@ -554,6 +582,34 @@ export default function LedgerPage() {
 
                         {t.balanceType}
 
+                      </td>
+
+                      <td
+                        style={
+                          styles.td
+                        }
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            className="btn secondary"
+                            onClick={() => navigate(`/edit/${t._id}`)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn danger"
+                            onClick={() => deleteEntry(t._id)}
+                            disabled={deleting === t._id}
+                          >
+                            {deleting === t._id ? "Deleting…" : "Delete"}
+                          </button>
+                        </div>
                       </td>
 
                     </tr>

@@ -9,6 +9,26 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+  const [deleting, setDeleting] = useState("");
+
+  const deleteTransaction = async (id) => {
+    const confirmed = window.confirm(
+      "Delete this transaction permanently?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(id);
+      await API.delete(`/transactions/${id}`);
+      setTransactions((prev) => prev.filter((item) => item._id !== id));
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err.response?.data?.error || "Failed to delete transaction");
+    } finally {
+      setDeleting("");
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -222,19 +242,37 @@ export default function Dashboard() {
                   <strong
                     style={{
                       color: isIncome ? "green" : "red",
+                      minWidth: 120,
+                      textAlign: "right",
                     }}
                   >
                     ₹ {toNumber(t.amount).toFixed(2)}
                   </strong>
 
-                  <button
-                    className="btn"
-                    onClick={() =>
-                      navigate(`/edit/${t._id}`)
-                    }
+                  <div
+                    className="action-buttons"
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                    }}
                   >
-                    Edit
-                  </button>
+                    <button
+                      className="btn secondary"
+                      onClick={() =>
+                        navigate(`/edit/${t._id}`)
+                      }
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn danger"
+                      onClick={() => deleteTransaction(t._id)}
+                      disabled={deleting === t._id}
+                    >
+                      {deleting === t._id ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
 
                 </div>
 

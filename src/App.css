@@ -197,18 +197,18 @@ body {
   background: var(--danger);
 }
 
-/* ================= LIST ================= */
-
-.list {
-  display: grid;
-  gap: 10px;
-  margin-top: 10px;
+.btn.small {
+  font-size: 13px;
+  padding: 0 12px;
+  height: 36px;
 }
 
-.list-item {
+.action-buttons {
   display: flex;
-  justify-content: space-between;
-  padding: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 
   border-radius: 14px;
   border: 1px solid rgba(226, 232, 240, 0.9);

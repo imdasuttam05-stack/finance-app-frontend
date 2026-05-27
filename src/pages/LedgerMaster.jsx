@@ -2,127 +2,200 @@ import React, { useEffect, useState } from "react";
 import { API } from "../api";
 import { useNavigate } from "react-router-dom";
 
-export default function DayBook() {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState("");
+export default function LedgerMaster() {
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [persons, setPersons] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setLoading(true);
-
-    API.get("/transactions")
-      .then((res) => {
-        const list = res.data || [];
-        setData(
-          list.filter((t) =>
-            new Date(t.date).toISOString().slice(0, 10) === date
-          )
-        );
-      })
-      .catch((err) => {
-        console.error(err);
-        setData([]);
-      })
-      .finally(() => setLoading(false));
-  }, [date]);
-
-  const toNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this transaction?")) return;
+  // LOAD LEDGERS
+  const load = async () => {
     try {
-      setDeleting(id);
-      await API.delete(`/transactions/${id}`);
-      setData((prev) => prev.filter((t) => t._id !== id));
+      setLoading(true);
+
+      const [personsRes, transactionsRes] = await Promise.all([
+        API.get("/persons"),
+        API.get("/transactions"),
+      ]);
+
+      const personsData = personsRes.data || [];
+      const transactions = transactionsRes.data || [];
+
+      // BALANCE CALCULATION
+      const updated = personsData.map((p) => {
+        const ledgerTx = transactions.filter(
+          (t) => t.personId?._id === p._id
+        );
+
+        let credit = 0;
+        let debit = 0;
+
+        ledgerTx.forEach((t) => {
+          const amount = Number(t.amount || 0);
+
+          if (t.type === "income" || t.subType === "asset") {
+            credit += amount;
+          } else {
+            debit += amount;
+          }
+        });
+
+        return {
+          ...p,
+          balance: credit - debit,
+        };
+      });
+
+      setPersons(updated);
+
     } catch (err) {
       console.error(err);
-      alert("Delete failed");
+      alert("Failed to load ledger list");
     } finally {
-      setDeleting("");
+      setLoading(false);
     }
   };
 
-  const total = data.reduce((s, t) => s + toNumber(t.amount), 0);
+  useEffect(() => {
+    load();
+  }, []);
+
+  // CREATE LEDGER
+  const createLedger = async () => {
+    const trimmed = name.trim();
+
+    if (!trimmed) {
+      return alert("Enter ledger name");
+    }
+
+    const exists = persons.some(
+      (p) => p.name.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (exists) {
+      return alert("Ledger already exists");
+    }
+
+    try {
+      setSaving(true);
+
+      await API.post("/persons", { name: trimmed, mobile: mobile.trim() });
+
+      setName("");
+      setMobile("");
+      load();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create ledger");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="page">
-      <div className="page-header">
-        <div>
-          <h1>📘 Day Book</h1>
-          <p>Full daily transaction report with edit & delete actions.</p>
-        </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+      {/* HEADER */}
+      <div className="page-header">
+        <h1>📒 Ledger Master</h1>
+        <p>Create and manage your ledger accounts</p>
+      </div>
+
+      {/* CREATE */}
+      <div className="card">
+        <div className="card-title">Create Ledger</div>
+
+        <div className="form">
           <input
-            type="date"
             className="input"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            placeholder="Enter ledger name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
 
-          <div className="pill">{loading ? "Loading..." : `${data.length} entries`}</div>
+          <input
+            className="input"
+            placeholder="Mobile number (optional)"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+
+          <button
+            className="btn"
+            onClick={createLedger}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Add Ledger"}
+          </button>
         </div>
       </div>
 
+      {/* LIST */}
       <div className="card">
-        <div className="card-title">Summary</div>
-
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div className="card" style={{ padding: 12, minWidth: 160 }}>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>Total</div>
-            <div style={{ fontWeight: 800, fontSize: 20 }}>₹ {total.toFixed(2)}</div>
-          </div>
-
-          <div style={{ marginLeft: "auto" }}>
-            <button className="btn" onClick={() => navigate("/transactions/new")}>New Transaction</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h3 style={{ marginBottom: 12 }}>Transactions</h3>
+        <div className="card-title">All Ledgers</div>
 
         {loading ? (
-          <p>Loading...</p>
-        ) : data.length === 0 ? (
-          <p>No transactions for selected date</p>
+          <div className="list-item">Loading...</div>
+        ) : persons.length === 0 ? (
+          <div className="list-item">No ledger found</div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "left" }}>Time</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "left" }}>Details</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right" }}>Amount</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12 }}>Actions</th>
-                </tr>
-              </thead>
+          <div className="list">
+            {persons.map((p) => (
+              <div
+                key={p._id}
+                className="list-item"
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 10px",
+                  borderBottom: "1px solid #eee",
+                }}
+                onClick={() => navigate(`/ledger/${p._id}`)}
+              >
 
-              <tbody>
-                {data.map((t) => (
-                  <tr key={t._id}>
-                    <td style={{ padding: 12 }}>{new Date(t.date).toLocaleTimeString()}</td>
-                    <td style={{ padding: 12 }}>
-                      <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
-                      <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
-                    </td>
-                    <td style={{ padding: 12, textAlign: "right" }}>₹ {toNumber(t.amount).toFixed(2)}</td>
-                    <td style={{ padding: 12 }}>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button className="btn secondary" onClick={() => navigate(`/edit/${t._id}`)}>Edit</button>
-                        <button className="btn danger" onClick={() => handleDelete(t._id)} disabled={deleting === t._id}>{deleting === t._id ? "Deleting..." : "Delete"}</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {/* NAME */}
+                <div>
+                  <div style={{ fontWeight: 700 }}>
+                    {p.name}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 12,
+                      opacity: 0.6,
+                    }}
+                  >
+                    {p.mobile ? `${p.mobile} • Click to open ledger` : "Click to open ledger"}
+                  </div>
+                </div>
+
+                {/* BALANCE */}
+                <div
+                  style={{
+                    color: p.balance >= 0 ? "green" : "red",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
+                >
+                  ₹ {Math.abs(p.balance).toFixed(2)}
+
+                  <div style={{ fontSize: 12 }}>
+                    {p.balance >= 0 ? "Receivable" : "Payable"}
+                  </div>
+                </div>
+
+              </div>
+            ))}
           </div>
         )}
       </div>
+
     </div>
   );
 }

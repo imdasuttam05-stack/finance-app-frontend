@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function LedgerMaster() {
   const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
   const [persons, setPersons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,9 +82,10 @@ export default function LedgerMaster() {
     try {
       setSaving(true);
 
-      await API.post("/persons", { name: trimmed });
+      await API.post("/persons", { name: trimmed, mobile: mobile.trim() });
 
       setName("");
+      setMobile("");
       load();
 
     } catch (err) {
@@ -113,6 +115,13 @@ export default function LedgerMaster() {
             placeholder="Enter ledger name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            className="input"
+            placeholder="Mobile number (optional)"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
           />
 
           <button
@@ -162,7 +171,7 @@ export default function LedgerMaster() {
                       opacity: 0.6,
                     }}
                   >
-                    Click to open ledger
+                    {p.mobile ? `${p.mobile} • Click to open ledger` : "Click to open ledger"}
                   </div>
                 </div>
 

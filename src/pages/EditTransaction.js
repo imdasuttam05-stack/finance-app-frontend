@@ -231,7 +231,7 @@ export default function EditTransaction() {
                     >
                       <option value="">Select Ledger</option>
                       {persons.map((p) => (
-                        <option key={p._id} value={p._id}>{p.name}</option>
+                        <option key={p._id} value={p._id}>{p.name}{p.mobile ? ` • ${p.mobile}` : ""}</option>
                       ))}
                     </select>
                   </div>
@@ -268,7 +268,7 @@ export default function EditTransaction() {
                     >
                       <option value="">Select Ledger</option>
                       {persons.map((p) => (
-                        <option key={p._id} value={p._id}>{p.name}</option>
+                        <option key={p._id} value={p._id}>{p.name}{p.mobile ? ` • ${p.mobile}` : ""}</option>
                       ))}
                     </select>
                   </div>

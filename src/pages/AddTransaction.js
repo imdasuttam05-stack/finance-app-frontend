@@ -73,6 +73,14 @@ export default function AddTransaction() {
   // 💾 SUBMIT
   const submit = async () => {
     try {
+      if (
+        ["loan", "investment", "payment", "received"].includes(form.type) &&
+        !form.person
+      ) {
+        alert("Please select a ledger before saving this transaction.");
+        return;
+      }
+
       setSaving(true);
 
       const {
@@ -313,21 +321,45 @@ export default function AddTransaction() {
 
           {/* INVESTMENT */}
           {form.type === "investment" && (
-            <div className="field" style={{ gridColumn: "span 4" }}>
-              <div className="label">Investment Type</div>
-              <select
-                className="select"
-                value={form.subType}
-                onChange={(e) =>
-                  setForm({ ...form, subType: e.target.value })
-                }
-              >
-                <option value="">Select</option>
-                {investmentTypes.map((inv) => (
-                  <option key={inv} value={inv}>{inv}</option>
-                ))}
-              </select>
-            </div>
+            <>
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Ledger</div>
+                <select
+                  className="select"
+                  value={form.person}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      person: e.target.value,
+                      againstId: "",
+                    })
+                  }
+                >
+                  <option value="">Select Ledger</option>
+                  {persons.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}{p.mobile ? ` • ${p.mobile}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field" style={{ gridColumn: "span 4" }}>
+                <div className="label">Investment Type</div>
+                <select
+                  className="select"
+                  value={form.subType}
+                  onChange={(e) =>
+                    setForm({ ...form, subType: e.target.value })
+                  }
+                >
+                  <option value="">Select</option>
+                  {investmentTypes.map((inv) => (
+                    <option key={inv} value={inv}>{inv}</option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
 
           {/* AMOUNT */}

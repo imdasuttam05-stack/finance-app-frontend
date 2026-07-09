@@ -1,16 +1,69 @@
 import { useState } from "react";
 import { API } from "../api";
+import "../styles/Login.css";
 
 export default function Login() {
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState("mobile");
+  const [isRegister, setIsRegister] = useState(false);
+  const [step, setStep] = useState("intro"); // intro, registration, otp, password, login
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [userId, setUserId] = useState("");
 
-  const requestOtp = async () => {
-    if (!mobile.trim()) {
-      alert("Enter your mobile number first.");
+  // Login fields
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // Registration fields
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Handle Login
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginUsername.trim() || !loginPassword.trim()) {
+      setMessage("Please enter username and password");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const res = await API.post("/auth/login", {
+        username: loginUsername.trim(),
+        password: loginPassword.trim(),
+      });
+
+      if (res.data.success) {
+        const token = `user-${res.data.user.id}`;
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", res.data.user.userId);
+        localStorage.setItem("username", res.data.user.username);
+        localStorage.setItem("userMobile", res.data.user.mobile);
+
+        setUserId(res.data.user.userId);
+        setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
+      }
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 1: Request OTP for Registration
+  const handleRegisterMobile = async (e) => {
+    e.preventDefault();
+    if (!username.trim() || !email.trim() || !mobile.trim()) {
+      setMessage("Please fill in all fields");
       return;
     }
 
@@ -22,20 +75,25 @@ export default function Login() {
         mobile: mobile.trim(),
       });
 
-      setStep("otp");
-      setMessage(res.data.message || "OTP sent to your mobile number.");
-      console.log("Demo OTP:", res.data.demoOtp);
+      if (res.data.success) {
+        setStep("otp");
+        setMessage(res.data.message);
+        if (res.data.demoOtp) {
+          console.log("Demo OTP:", res.data.demoOtp);
+        }
+      }
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || "OTP request failed.");
+      setMessage(err.response?.data?.error || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
   };
 
-  const verifyOtp = async () => {
-    if (!mobile.trim() || !otp.trim()) {
-      alert("Enter mobile number and OTP code.");
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otp.trim()) {
+      setMessage("Please enter OTP");
       return;
     }
 
@@ -48,78 +106,342 @@ export default function Login() {
         code: otp.trim(),
       });
 
-      const token = `user-${res.data.user.id}`;
-      localStorage.setItem("token", token);
-      localStorage.setItem("userMobile", res.data.user.mobile);
-
-      window.location.href = "/dashboard";
+      if (res.data.success) {
+        setStep("password");
+        setMessage("OTP verified successfully! Now set your password.");
+      }
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || "OTP verification failed.");
+      setMessage(err.response?.data?.error || "OTP verification failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // Step 3: Complete Registration with Password
+  const handleCompleteRegistration = async (e) => {
+    e.preventDefault();
+    if (!password.trim() || !confirmPassword.trim()) {
+      setMessage("Please enter password");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const res = await API.post("/auth/register", {
+        mobile: mobile.trim(),
+        username: username.trim(),
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (res.data.success) {
+        const token = `user-${res.data.user.id}`;
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", res.data.user.userId);
+        localStorage.setItem("username", res.data.user.username);
+        localStorage.setItem("userMobile", res.data.user.mobile);
+
+        setUserId(res.data.user.userId);
+        setMessage(`Registration successful! Your User ID: ${res.data.user.userId}`);
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
+      }
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setIsRegister(false);
+    setStep("intro");
+    setUsername("");
+    setEmail("");
+    setMobile("");
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+    setLoginUsername("");
+    setLoginPassword("");
+    setMessage("");
+    setUserId("");
+  };
+
   return (
-    <div className="page" style={{ maxWidth: 400, margin: "auto", marginTop: 100 }}>
-      <div className="card">
-        <h2>Mobile OTP Login</h2>
+    <div className="login-container">
+      {/* Finance Background Images */}
+      <div className="finance-bg">
+        <div className="bg-image bg-1"></div>
+        <div className="bg-image bg-2"></div>
+        <div className="bg-image bg-3"></div>
+      </div>
 
-        {step === "mobile" ? (
-          <>
-            <input
-              className="input"
-              placeholder="Mobile number"
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-            />
+      <div className="login-card">
+        {/* Step: Intro/Choose Login or Register */}
+        {step === "intro" && (
+          <div className="auth-section">
+            <h1 className="title">💰 Finance Manager</h1>
+            <p className="subtitle">Manage your finances efficiently</p>
 
-            <button className="btn" onClick={requestOtp} disabled={loading}>
-              {loading ? "Sending OTP..." : "Send OTP"}
-            </button>
-          </>
-        ) : (
-          <>
-            <input
-              className="input"
-              placeholder="Mobile number"
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-            />
-
-            <input
-              className="input"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
-
-            <button className="btn" onClick={verifyOtp} disabled={loading}>
-              {loading ? "Verifying..." : "Verify OTP"}
-            </button>
-
-            <button
-              className="btn secondary"
-              onClick={() => {
-                setStep("mobile");
-                setOtp("");
-                setMessage("");
-              }}
-              style={{ marginTop: 10 }}
-            >
-              Use another mobile
-            </button>
-          </>
+            <div className="button-group">
+              <button
+                className="auth-btn login-btn"
+                onClick={() => {
+                  setIsRegister(false);
+                  setStep("login");
+                  setMessage("");
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="auth-btn register-btn"
+                onClick={() => {
+                  setIsRegister(true);
+                  setStep("register");
+                  setMessage("");
+                }}
+              >
+                Register
+              </button>
+            </div>
+          </div>
         )}
 
-        {message && (
-          <p style={{ marginTop: 16, color: "#065f46" }}>{message}</p>
+        {/* Step: Login */}
+        {step === "login" && (
+          <div className="auth-section">
+            <h2 className="title">Login</h2>
+            <form onSubmit={handleLogin}>
+              <div className="form-group">
+                <label>Username or Email</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Enter username or email"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="Enter password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {message && (
+                <div className={`message ${message.includes("successful") ? "success" : "error"}`}>
+                  {message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </button>
+            </form>
+
+            <div className="footer">
+              <button className="link-btn" onClick={resetForm}>
+                ← Back
+              </button>
+            </div>
+          </div>
         )}
 
-        <p style={{ marginTop: 12, opacity: 0.7, fontSize: 14 }}>
-          Same mobile number will always open the same account.
-        </p>
+        {/* Step: Register - Basic Info */}
+        {step === "register" && (
+          <div className="auth-section">
+            <h2 className="title">Create Account</h2>
+            <form onSubmit={handleRegisterMobile}>
+              <div className="form-group">
+                <label>Username</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mobile Number</label>
+                <input
+                  type="tel"
+                  className="input"
+                  placeholder="Enter mobile number"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  required
+                />
+              </div>
+
+              {message && (
+                <div className={`message ${message.includes("successful") ? "success" : "error"}`}>
+                  {message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading}
+              >
+                {loading ? "Sending OTP..." : "Send OTP"}
+              </button>
+            </form>
+
+            <div className="footer">
+              <button className="link-btn" onClick={resetForm}>
+                ← Back
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step: OTP Verification */}
+        {step === "otp" && (
+          <div className="auth-section">
+            <h2 className="title">Verify OTP</h2>
+            <p className="subtitle">Enter OTP sent to {mobile}</p>
+            <form onSubmit={handleVerifyOtp}>
+              <div className="form-group">
+                <label>OTP Code</label>
+                <input
+                  type="text"
+                  className="input otp-input"
+                  placeholder="000000"
+                  maxLength="6"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  required
+                />
+              </div>
+
+              {message && (
+                <div className={`message ${message.includes("successful") ? "success" : "error"}`}>
+                  {message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading}
+              >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </button>
+
+              <button
+                type="button"
+                className="link-btn"
+                onClick={handleRegisterMobile}
+                disabled={loading}
+              >
+                Resend OTP
+              </button>
+            </form>
+
+            <div className="footer">
+              <button className="link-btn" onClick={resetForm}>
+                ← Back
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step: Set Password */}
+        {step === "password" && (
+          <div className="auth-section">
+            <h2 className="title">Set Password</h2>
+            <p className="subtitle">Create a strong password for your account</p>
+            <form onSubmit={handleCompleteRegistration}>
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {message && (
+                <div className={`message ${message.includes("successful") ? "success" : "error"}`}>
+                  {message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading}
+              >
+                {loading ? "Creating Account..." : "Complete Registration"}
+              </button>
+            </form>
+
+            <div className="footer">
+              <button className="link-btn" onClick={resetForm}>
+                ← Back
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

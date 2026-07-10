@@ -3,11 +3,10 @@ import { API } from "../api";
 import "../styles/Login.css";
 
 export default function Login() {
-  const [isRegister, setIsRegister] = useState(false);
   const [step, setStep] = useState("intro"); // intro, registration, otp, password, login
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [userId, setUserId] = useState("");
+  const [registeredUserId, setRegisteredUserId] = useState("");
 
   // Login fields
   const [loginUsername, setLoginUsername] = useState("");
@@ -45,7 +44,6 @@ export default function Login() {
         localStorage.setItem("username", res.data.user.username);
         localStorage.setItem("userMobile", res.data.user.mobile);
 
-        setUserId(res.data.user.userId);
         setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
 
         setTimeout(() => {
@@ -153,12 +151,9 @@ export default function Login() {
         localStorage.setItem("username", res.data.user.username);
         localStorage.setItem("userMobile", res.data.user.mobile);
 
-        setUserId(res.data.user.userId);
-        setMessage(`Registration successful! Your User ID: ${res.data.user.userId}`);
-
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1500);
+        setRegisteredUserId(res.data.user.userId || "");
+        setStep("success");
+        setMessage("");
       }
     } catch (err) {
       setMessage(err.response?.data?.error || "Registration failed");
@@ -168,7 +163,6 @@ export default function Login() {
   };
 
   const resetForm = () => {
-    setIsRegister(false);
     setStep("intro");
     setUsername("");
     setEmail("");
@@ -179,7 +173,7 @@ export default function Login() {
     setLoginUsername("");
     setLoginPassword("");
     setMessage("");
-    setUserId("");
+    setRegisteredUserId("");
   };
 
   return (
@@ -202,7 +196,6 @@ export default function Login() {
               <button
                 className="auth-btn login-btn"
                 onClick={() => {
-                  setIsRegister(false);
                   setStep("login");
                   setMessage("");
                 }}
@@ -212,7 +205,6 @@ export default function Login() {
               <button
                 className="auth-btn register-btn"
                 onClick={() => {
-                  setIsRegister(true);
                   setStep("register");
                   setMessage("");
                 }}
@@ -281,7 +273,7 @@ export default function Login() {
             <h2 className="title">Create Account</h2>
             <form onSubmit={handleRegisterMobile}>
               <div className="form-group">
-                <label>Username</label>
+                <label>User Name</label>
                 <input
                   type="text"
                   className="input"
@@ -293,7 +285,7 @@ export default function Login() {
               </div>
 
               <div className="form-group">
-                <label>Email</label>
+                <label>Mail ID</label>
                 <input
                   type="email"
                   className="input"
@@ -387,6 +379,31 @@ export default function Login() {
                 ← Back
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Step: Success */}
+        {step === "success" && (
+          <div className="auth-section">
+            <h2 className="title">Registration Complete</h2>
+            <p className="subtitle">Your account is ready. Use your password to log in next time.</p>
+
+            <div className="message success" style={{ textAlign: "left", marginBottom: "12px" }}>
+              <strong>Your User ID</strong>
+              <div style={{ marginTop: "6px", fontSize: "1rem", wordBreak: "break-all" }}>
+                {registeredUserId}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-submit"
+              onClick={() => {
+                window.location.href = "/dashboard";
+              }}
+            >
+              Go to Dashboard
+            </button>
           </div>
         )}
 

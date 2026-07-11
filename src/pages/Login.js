@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { API } from "../api";
 import "../styles/Login.css";
 
@@ -43,6 +44,7 @@ export default function Login() {
         localStorage.setItem("userId", res.data.user.userId);
         localStorage.setItem("username", res.data.user.username);
         localStorage.setItem("userMobile", res.data.user.mobile);
+        localStorage.setItem("isApproved", String(res.data.user.isApproved));
 
         setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
 
@@ -205,6 +207,9 @@ export default function Login() {
               >
                 Register
               </button>
+            </div>
+            <div className="small-note">
+              Admin? <Link to="/admin-approve">Approve a user</Link>
             </div>
           </div>
         )}
@@ -381,13 +386,15 @@ export default function Login() {
           <div className="auth-section">
             <h2 className="title">Registration Complete</h2>
             <p className="subtitle">Your account is created and is now pending approval. Once approved, you will be able to log in.</p>
-
             <div className="message success" style={{ textAlign: "left", marginBottom: "12px" }}>
               <strong>Your User ID</strong>
               <div style={{ marginTop: "6px", fontSize: "1rem", wordBreak: "break-all" }}>
                 {registeredUserId}
               </div>
             </div>
+            <p className="small-note">
+              Admin can approve this user using the Admin Approval page.
+            </p>
 
             <button
               type="button"

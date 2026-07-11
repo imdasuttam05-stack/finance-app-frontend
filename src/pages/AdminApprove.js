@@ -3,6 +3,7 @@ import { API } from "../api";
 import "../styles/Login.css";
 
 export default function AdminApprove() {
+  const isAdminSession = localStorage.getItem("isAdmin") === "true";
   const [secret, setSecret] = useState("");
   const [pendingUsers, setPendingUsers] = useState([]);
   const [message, setMessage] = useState("");
@@ -10,7 +11,7 @@ export default function AdminApprove() {
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   const loadPendingUsers = async () => {
-    if (!secret.trim()) {
+    if (!isAdminSession && !secret.trim()) {
       setMessage("Enter admin secret first.");
       return;
     }
@@ -20,7 +21,7 @@ export default function AdminApprove() {
       setMessage("");
 
       const res = await API.get("/auth/pending-users", {
-        params: { secret: secret.trim() },
+        params: { secret: isAdminSession ? "" : secret.trim() },
       });
 
       setPendingUsers(res.data.users || []);
@@ -33,7 +34,7 @@ export default function AdminApprove() {
   };
 
   const approveUser = async (userId) => {
-    if (!secret.trim()) {
+    if (!isAdminSession && !secret.trim()) {
       setMessage("Enter admin secret first.");
       return;
     }
@@ -44,7 +45,7 @@ export default function AdminApprove() {
 
       await API.post("/auth/approve-user", {
         userId,
-        secret: secret.trim(),
+        secret: isAdminSession ? "" : secret.trim(),
       });
 
       setMessage(`User ${userId} approved successfully.`);
@@ -73,18 +74,20 @@ export default function AdminApprove() {
       <div className="login-card">
         <div className="auth-section">
           <h2 className="title">Admin Approval Panel</h2>
-          <p className="subtitle">Enter the admin secret, load pending users, and approve them with one click.</p>
+          <p className="subtitle">{isAdminSession ? "Admin session detected. You can approve users without entering a secret." : "Enter the admin secret, load pending users, and approve them with one click."}</p>
 
-          <div className="form-group">
-            <label>Admin Secret</label>
-            <input
-              type="password"
-              className="input"
-              placeholder="Enter admin secret"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-            />
-          </div>
+          {!isAdminSession && (
+            <div className="form-group">
+              <label>Admin Secret</label>
+              <input
+                type="password"
+                className="input"
+                placeholder="Enter admin secret"
+                value={secret}
+                onChange={(e) => setSecret(e.target.value)}
+              />
+            </div>
+          )}
 
           <button
             type="button"

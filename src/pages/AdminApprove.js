@@ -69,6 +69,38 @@ export default function AdminApprove() {
     }
   };
 
+  const rejectUser = async (userId) => {
+    if (!isAdminSession && !secret.trim()) {
+      setMessage("Enter admin secret first.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      await API.post(
+        "/auth/reject-user",
+        {
+          userId,
+          secret: isAdminSession ? "" : secret.trim(),
+        },
+        {
+          headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
+        }
+      );
+
+      setMessage(`User ${userId} rejected successfully.`);
+      setPendingUsers((users) => users.filter((user) => user.userId !== userId));
+      setConfirmedIds((ids) => ids.filter((id) => id !== userId));
+      setExpandedIds((ids) => ids.filter((id) => id !== userId));
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Rejection failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleExpand = (userId) => {
     setExpandedIds((ids) => (ids.includes(userId) ? ids.filter((i) => i !== userId) : [...ids, userId]));
   };
@@ -171,14 +203,25 @@ export default function AdminApprove() {
                         </div>
                       )}
 
-                      <button
-                        type="button"
-                        className="btn-submit"
-                        onClick={() => approveUser(user.userId)}
-                        disabled={loading || !confirmedIds.includes(user.userId)}
-                      >
-                        Approve
-                      </button>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          className="btn-submit"
+                          onClick={() => approveUser(user.userId)}
+                          disabled={loading || !confirmedIds.includes(user.userId)}
+                        >
+                          Approve
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          onClick={() => rejectUser(user.userId)}
+                          disabled={loading || !confirmedIds.includes(user.userId)}
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

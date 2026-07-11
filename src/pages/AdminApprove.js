@@ -93,7 +93,7 @@ export default function AdminApprove() {
             type="button"
             className="btn-submit"
             onClick={loadPendingUsers}
-            disabled={loadingUsers || !secret.trim()}
+            disabled={loadingUsers || (!isAdminSession && !secret.trim())}
           >
             {loadingUsers ? "Loading users..." : "Load Pending Users"}
           </button>

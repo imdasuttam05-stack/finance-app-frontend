@@ -14,6 +14,7 @@ export default function AdminApprove() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [lastRequestInfo, setLastRequestInfo] = useState(null);
 
   const loadPendingUsers = async () => {
     if (!isAdminSession && !secret.trim()) {
@@ -36,9 +37,11 @@ export default function AdminApprove() {
       const res = await API.get("/auth/pending-users", getOptions);
 
       setPendingUsers(res.data.users || []);
+      setLastRequestInfo({ success: true, status: res.status, url: res.config?.url });
     } catch (err) {
       setMessage(err.response?.data?.error || "Failed to load pending users.");
       setPendingUsers([]);
+      setLastRequestInfo({ success: false, status: err.response?.status, data: err.response?.data });
     } finally {
       setLoadingUsers(false);
     }
@@ -140,6 +143,23 @@ export default function AdminApprove() {
         <div className="auth-section">
           <h2 className="title">Admin Approval Panel</h2>
           <p className="subtitle">{isAdminSession ? "Admin session detected. You can approve users without entering a secret." : "Enter the admin secret, load pending users, and approve them with one click."}</p>
+
+          <div style={{ marginTop: 8, marginBottom: 12, padding: 8, background: "#f6f6fb", borderRadius: 8 }}>
+            <div style={{ fontSize: 12, color: "#333" }}><strong>Debug</strong></div>
+            <div style={{ fontSize: 12, marginTop: 6 }}>
+              <div>storedUserId: {storedUserId || "(none)"}</div>
+              <div>isAdmin flag: {localStorage.getItem("isAdmin") || "(none)"}</div>
+              <div>secret present: {secret.trim() ? "yes" : "no"}</div>
+              <div>pendingUsers: {pendingUsers.length}</div>
+              {lastRequestInfo && (
+                <div style={{ marginTop: 6 }}>
+                  <div>lastRequest success: {String(lastRequestInfo.success)}</div>
+                  <div>status: {lastRequestInfo.status || "-"}</div>
+                  <div>{lastRequestInfo.data ? JSON.stringify(lastRequestInfo.data) : ""}</div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {!isAdminSession && (
             <div className="form-group">

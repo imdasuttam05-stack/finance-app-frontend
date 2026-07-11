@@ -45,11 +45,13 @@ export default function Login() {
         localStorage.setItem("username", res.data.user.username);
         localStorage.setItem("userMobile", res.data.user.mobile);
         localStorage.setItem("isApproved", String(res.data.user.isApproved));
+        localStorage.setItem("isAdmin", String(res.data.user.isAdmin || false));
+        localStorage.setItem("role", res.data.user.role || "user");
 
         setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
 
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = res.data.user.isAdmin ? "/admin-approve" : "/dashboard";
         }, 1500);
       }
     } catch (err) {

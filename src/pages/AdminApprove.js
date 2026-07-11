@@ -6,6 +6,8 @@ export default function AdminApprove() {
   const storedUserId = localStorage.getItem("userId");
   const isAdminSession = localStorage.getItem("isAdmin") === "true" && Boolean(storedUserId);
   const [secret, setSecret] = useState("");
+  const [adminLoginUser, setAdminLoginUser] = useState("");
+  const [adminLoginPass, setAdminLoginPass] = useState("");
   const [pendingUsers, setPendingUsers] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
   const [confirmedIds, setConfirmedIds] = useState([]);
@@ -144,6 +146,74 @@ export default function AdminApprove() {
                 value={secret}
                 onChange={(e) => setSecret(e.target.value)}
               />
+            </div>
+          )}
+
+          {!isAdminSession && (
+            <div style={{ marginTop: 12 }}>
+              <details>
+                <summary style={{ cursor: "pointer" }}>Admin Login (use admin credentials)</summary>
+                <div style={{ marginTop: 8 }}>
+                  <div className="form-group">
+                    <label>Admin Username</label>
+                    <input
+                      type="text"
+                      className="input"
+                      placeholder="admin"
+                      value={adminLoginUser}
+                      onChange={(e) => setAdminLoginUser(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Admin Password</label>
+                    <input
+                      type="password"
+                      className="input"
+                      placeholder="Admin password"
+                      value={adminLoginPass}
+                      onChange={(e) => setAdminLoginPass(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-submit"
+                    onClick={async () => {
+                      if (!adminLoginUser.trim() || !adminLoginPass.trim()) {
+                        setMessage("Enter admin credentials");
+                        return;
+                      }
+
+                      try {
+                        setLoading(true);
+                        setMessage("");
+                        const res = await API.post("/auth/login", {
+                          username: adminLoginUser.trim(),
+                          password: adminLoginPass.trim(),
+                        });
+
+                        if (res.data?.success && res.data.user) {
+                          localStorage.setItem("token", `user-${res.data.user.id}`);
+                          localStorage.setItem("userId", res.data.user.userId);
+                          localStorage.setItem("username", res.data.user.username || "");
+                          localStorage.setItem("userMobile", res.data.user.mobile || "");
+                          localStorage.setItem("isApproved", String(res.data.user.isApproved));
+                          localStorage.setItem("isAdmin", String(res.data.user.isAdmin || false));
+                          localStorage.setItem("role", res.data.user.role || "user");
+
+                          setMessage("Admin login successful. Reloading...");
+                          setTimeout(() => window.location.reload(), 800);
+                        }
+                      } catch (err) {
+                        setMessage(err.response?.data?.error || "Admin login failed");
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                  >
+                    Login as Admin
+                  </button>
+                </div>
+              </details>
             </div>
           )}
 

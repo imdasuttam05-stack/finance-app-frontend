@@ -3,7 +3,8 @@ import { API } from "../api";
 import "../styles/Login.css";
 
 export default function AdminApprove() {
-  const isAdminSession = localStorage.getItem("isAdmin") === "true";
+  const storedUserId = localStorage.getItem("userId");
+  const isAdminSession = localStorage.getItem("isAdmin") === "true" && Boolean(storedUserId);
   const [secret, setSecret] = useState("");
   const [pendingUsers, setPendingUsers] = useState([]);
   const [message, setMessage] = useState("");
@@ -62,6 +63,12 @@ export default function AdminApprove() {
       setMessage("");
     }
   }, [secret]);
+
+  useEffect(() => {
+    if (localStorage.getItem("isAdmin") === "true" && !storedUserId) {
+      setMessage("Admin flag present but not logged in. Please login as admin to use this panel.");
+    }
+  }, [storedUserId]);
 
   return (
     <div className="login-container">

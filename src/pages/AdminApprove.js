@@ -25,10 +25,15 @@ export default function AdminApprove() {
       setLoadingUsers(true);
       setMessage("");
 
-      const res = await API.get("/auth/pending-users", {
-        params: { secret: isAdminSession ? "" : secret.trim() },
-        headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
-      });
+      const getOptions = {};
+      if (!isAdminSession && secret.trim()) {
+        getOptions.params = { secret: secret.trim() };
+      }
+      if (isAdminSession && storedUserId) {
+        getOptions.headers = { "x-user-id": storedUserId };
+      }
+
+      const res = await API.get("/auth/pending-users", getOptions);
 
       setPendingUsers(res.data.users || []);
     } catch (err) {
@@ -49,16 +54,16 @@ export default function AdminApprove() {
       setLoading(true);
       setMessage("");
 
-      await API.post(
-        "/auth/approve-user",
-        {
-          userId,
-          secret: isAdminSession ? "" : secret.trim(),
-        },
-        {
-          headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
-        }
-      );
+      const approveBody = { userId };
+      if (!isAdminSession && secret.trim()) {
+        approveBody.secret = secret.trim();
+      }
+      const approveOpts = {};
+      if (isAdminSession && storedUserId) {
+        approveOpts.headers = { "x-user-id": storedUserId };
+      }
+
+      await API.post("/auth/approve-user", approveBody, approveOpts);
 
       setMessage(`User ${userId} approved successfully.`);
       setPendingUsers((users) => users.filter((user) => user.userId !== userId));
@@ -81,16 +86,16 @@ export default function AdminApprove() {
       setLoading(true);
       setMessage("");
 
-      await API.post(
-        "/auth/reject-user",
-        {
-          userId,
-          secret: isAdminSession ? "" : secret.trim(),
-        },
-        {
-          headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
-        }
-      );
+      const rejectBody = { userId };
+      if (!isAdminSession && secret.trim()) {
+        rejectBody.secret = secret.trim();
+      }
+      const rejectOpts = {};
+      if (isAdminSession && storedUserId) {
+        rejectOpts.headers = { "x-user-id": storedUserId };
+      }
+
+      await API.post("/auth/reject-user", rejectBody, rejectOpts);
 
       setMessage(`User ${userId} rejected successfully.`);
       setPendingUsers((users) => users.filter((user) => user.userId !== userId));

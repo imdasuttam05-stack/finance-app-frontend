@@ -84,6 +84,7 @@ export default function TopNav() {
           <NavLink className="topnav-link" to="/profile">
             Profile
           </NavLink>
+        </nav>
         <div className="topnav-right">
           <button className="topnav-cta" onClick={() => go("/transactions/new")}>
             + Add

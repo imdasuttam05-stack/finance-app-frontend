@@ -25,6 +25,7 @@ export default function AdminApprove() {
 
       const res = await API.get("/auth/pending-users", {
         params: { secret: isAdminSession ? "" : secret.trim() },
+        headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
       });
 
       setPendingUsers(res.data.users || []);
@@ -46,10 +47,16 @@ export default function AdminApprove() {
       setLoading(true);
       setMessage("");
 
-      await API.post("/auth/approve-user", {
-        userId,
-        secret: isAdminSession ? "" : secret.trim(),
-      });
+      await API.post(
+        "/auth/approve-user",
+        {
+          userId,
+          secret: isAdminSession ? "" : secret.trim(),
+        },
+        {
+          headers: isAdminSession && storedUserId ? { "x-user-id": storedUserId } : undefined,
+        }
+      );
 
       setMessage(`User ${userId} approved successfully.`);
       setPendingUsers((users) => users.filter((user) => user.userId !== userId));

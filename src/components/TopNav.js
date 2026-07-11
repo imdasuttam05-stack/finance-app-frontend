@@ -139,6 +139,10 @@ export default function TopNav() {
             Monthly Report
           </button>
 
+          <button className="topnav-drawerLink" onClick={() => go("/profile")}>
+            Profile
+          </button>
+
           <button className="topnav-drawerLink logout" onClick={logout}>
             Logout
           </button>

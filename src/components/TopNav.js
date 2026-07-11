@@ -80,9 +80,10 @@ export default function TopNav() {
           <NavLink className="topnav-link" to="/monthly">
             Report
           </NavLink>
-        </nav>
 
-        {/* RIGHT */}
+          <NavLink className="topnav-link" to="/profile">
+            Profile
+          </NavLink>
         <div className="topnav-right">
           <button className="topnav-cta" onClick={() => go("/transactions/new")}>
             + Add

@@ -15,10 +15,18 @@ API.interceptors.request.use(
   (config) => {
     try {
       const userId = localStorage.getItem("userId") || "";
+      const adminSecret = localStorage.getItem("adminSecret") || localStorage.getItem("ADMIN_SECRET") || "";
+      config.headers = config.headers || {};
       if (userId) {
-        config.headers = config.headers || {};
         config.headers["x-user-id"] = userId;
       }
+      // If an admin secret is stored in localStorage, send it as a header as a fallback
+      if (adminSecret && !config.headers["x-admin-secret"]) {
+        config.headers["x-admin-secret"] = adminSecret;
+      }
+      // debug: show outgoing admin/user headers (can remove later)
+      // eslint-disable-next-line no-console
+      console.debug("API request:", config.method, config.url, { "x-user-id": config.headers["x-user-id"], "x-admin-secret": !!config.headers["x-admin-secret"] });
     } catch (e) {
       // ignore if localStorage not available
     }

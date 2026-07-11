@@ -48,6 +48,9 @@ from "./pages/EditTransaction";
 import Profile
 from "./pages/Profile";
 
+import AdminApprove
+from "./pages/AdminApprove";
+
 import Login
 from "./pages/Login";
 
@@ -293,6 +296,11 @@ function App() {
 
               }
 
+            />
+
+            <Route
+              path="/admin-approve"
+              element={<AdminApprove />}
             />
 
             {/* 404 */}

@@ -7,6 +7,8 @@ export default function AdminApprove() {
   const isAdminSession = localStorage.getItem("isAdmin") === "true" && Boolean(storedUserId);
   const [secret, setSecret] = useState("");
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [expandedIds, setExpandedIds] = useState([]);
+  const [confirmedIds, setConfirmedIds] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -51,11 +53,21 @@ export default function AdminApprove() {
 
       setMessage(`User ${userId} approved successfully.`);
       setPendingUsers((users) => users.filter((user) => user.userId !== userId));
+      setConfirmedIds((ids) => ids.filter((id) => id !== userId));
+      setExpandedIds((ids) => ids.filter((id) => id !== userId));
     } catch (err) {
       setMessage(err.response?.data?.error || "Approval failed.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleExpand = (userId) => {
+    setExpandedIds((ids) => (ids.includes(userId) ? ids.filter((i) => i !== userId) : [...ids, userId]));
+  };
+
+  const toggleConfirm = (userId) => {
+    setConfirmedIds((ids) => (ids.includes(userId) ? ids.filter((i) => i !== userId) : [...ids, userId]));
   };
 
   useEffect(() => {
@@ -117,20 +129,50 @@ export default function AdminApprove() {
               <div className="pending-list">
                 {pendingUsers.map((user) => (
                   <div key={user.userId} className="pending-card">
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <strong>{user.username || "No username"}</strong>
                       <div>User ID: {user.userId}</div>
                       <div>Email: {user.email || "-"}</div>
                       <div>Mobile: {user.mobile || "-"}</div>
+                      {user.createdAt && (
+                        <div>Requested: {new Date(user.createdAt).toLocaleString()}</div>
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      className="btn-submit"
-                      onClick={() => approveUser(user.userId)}
-                      disabled={loading}
-                    >
-                      Approve
-                    </button>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: 160 }}>
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => toggleExpand(user.userId)}
+                      >
+                        {expandedIds.includes(user.userId) ? "Hide Details" : "View Details"}
+                      </button>
+
+                      {expandedIds.includes(user.userId) && (
+                        <div style={{ textAlign: "left", padding: "8px", background: "#fff", borderRadius: 6 }}>
+                          <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 12 }}>{JSON.stringify(user, null, 2)}</pre>
+                          <div style={{ marginTop: 8 }}>
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={confirmedIds.includes(user.userId)}
+                                onChange={() => toggleConfirm(user.userId)}
+                              />{' '}
+                              I confirm these details are correct
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn-submit"
+                        onClick={() => approveUser(user.userId)}
+                        disabled={loading || !confirmedIds.includes(user.userId)}
+                      >
+                        Approve
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

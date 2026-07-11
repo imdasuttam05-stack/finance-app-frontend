@@ -60,19 +60,25 @@ from "./pages/Login";
 
 function PrivateRoute({
   children,
+  adminOnly = false,
 }) {
 
   const token =
     localStorage.getItem(
       "token"
     );
+  const isAdmin =
+    localStorage.getItem("isAdmin") === "true";
 
-  return token
-    ? children
-    : <Navigate
-        to="/login"
-        replace
-      />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
 
 }
 
@@ -300,7 +306,11 @@ function App() {
 
             <Route
               path="/admin-approve"
-              element={<AdminApprove />}
+              element={
+                <PrivateRoute adminOnly>
+                  <AdminApprove />
+                </PrivateRoute>
+              }
             />
 
             {/* 404 */}

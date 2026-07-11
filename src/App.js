@@ -45,6 +45,9 @@ from "./pages/MonthlyReport";
 import EditTransaction
 from "./pages/EditTransaction";
 
+import Profile
+from "./pages/Profile";
+
 import Login
 from "./pages/Login";
 
@@ -267,6 +270,24 @@ function App() {
                 <PrivateRoute>
 
                   <EditTransaction />
+
+                </PrivateRoute>
+
+              }
+
+            />
+
+            {/* PROFILE */}
+
+            <Route
+
+              path="/profile"
+
+              element={
+
+                <PrivateRoute>
+
+                  <Profile />
 
                 </PrivateRoute>
 

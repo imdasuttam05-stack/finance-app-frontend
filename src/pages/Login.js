@@ -145,12 +145,6 @@ export default function Login() {
       });
 
       if (res.data.success) {
-        const token = `user-${res.data.user.id}`;
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", res.data.user.userId);
-        localStorage.setItem("username", res.data.user.username);
-        localStorage.setItem("userMobile", res.data.user.mobile);
-
         setRegisteredUserId(res.data.user.userId || "");
         setStep("success");
         setMessage("");
@@ -386,7 +380,7 @@ export default function Login() {
         {step === "success" && (
           <div className="auth-section">
             <h2 className="title">Registration Complete</h2>
-            <p className="subtitle">Your account is ready. Use your password to log in next time.</p>
+            <p className="subtitle">Your account is created and is now pending approval. Once approved, you will be able to log in.</p>
 
             <div className="message success" style={{ textAlign: "left", marginBottom: "12px" }}>
               <strong>Your User ID</strong>
@@ -399,10 +393,10 @@ export default function Login() {
               type="button"
               className="btn-submit"
               onClick={() => {
-                window.location.href = "/dashboard";
+                window.location.href = "/login";
               }}
             >
-              Go to Dashboard
+              Back to Login
             </button>
           </div>
         )}

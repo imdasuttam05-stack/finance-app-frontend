@@ -16,6 +16,7 @@ export default function TopNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   const pageTitle = useMemo(
     () => getPageTitle(location.pathname),
@@ -24,6 +25,12 @@ export default function TopNav() {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userMobile");
+    localStorage.removeItem("isApproved");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("role");
     navigate("/login");
   };
 
@@ -84,6 +91,12 @@ export default function TopNav() {
           <NavLink className="topnav-link" to="/profile">
             Profile
           </NavLink>
+
+          {isAdmin && (
+            <NavLink className="topnav-link" to="/admin-approve">
+              Approve
+            </NavLink>
+          )}
         </nav>
         <div className="topnav-right">
           <button className="topnav-cta" onClick={() => go("/transactions/new")}>
@@ -142,6 +155,12 @@ export default function TopNav() {
           <button className="topnav-drawerLink" onClick={() => go("/profile")}>
             Profile
           </button>
+
+          {isAdmin && (
+            <button className="topnav-drawerLink" onClick={() => go("/admin-approve")}>
+              Approve Users
+            </button>
+          )}
 
           <button className="topnav-drawerLink logout" onClick={logout}>
             Logout

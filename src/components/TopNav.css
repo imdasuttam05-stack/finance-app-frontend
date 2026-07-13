@@ -146,6 +146,93 @@
   gap: 10px;
 }
 
+/* SEARCH */
+.topnav-search {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 12px;
+}
+
+.topnav-searchInput {
+  border: none;
+  outline: none;
+  width: 200px;
+  font-size: 13px;
+}
+
+/* ICON BUTTONS */
+.topnav-iconButton {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.topnav-iconButton .badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--danger);
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+/* USER MENU */
+.topnav-userBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.topnav-username {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.topnav-userMenu {
+  position: absolute;
+  right: 18px;
+  margin-top: 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+}
+
+.topnav-userMenuItem {
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topnav-userMenuItem.logout {
+  color: var(--danger);
+}
+
+.topnav-userMenuDivider {
+  height: 1px;
+  background: var(--border);
+}
+
 /* CTA BUTTON */
 .topnav-cta {
   padding: 10px 14px;

@@ -92,14 +92,26 @@ export default function Dashboard() {
 
       {/* HEADER */}
       <div className="page-header">
-        <div>
-          <h1>📊 Dashboard</h1>
-          <p>Professional finance overview</p>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ fontSize: 36 }}>📊</div>
+          <div>
+            <h1>Dashboard</h1>
+            <p style={{ marginTop: 6 }}>Professional finance overview</p>
+          </div>
         </div>
 
-        <span className="pill">
-          {loading ? "Loading..." : "Live"}
-        </span>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <button className="btn small" onClick={() => navigate('/transactions/new')}>+ Add Transaction</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontWeight: 900 }}>Welcome back</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>Quick snapshot</div>
+            </div>
+            <button className="topnav-userBtn" onClick={() => navigate('/profile')}>
+              <div className="topnav-avatar">{(localStorage.getItem('username')||'U')[0].toUpperCase()}</div>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* SUMMARY CARDS */}

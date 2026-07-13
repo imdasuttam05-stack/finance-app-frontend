@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./TopNav.css";
 
@@ -17,6 +17,9 @@ export default function TopNav() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const username = localStorage.getItem("username") || "Uttam";
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const pageTitle = useMemo(
     () => getPageTitle(location.pathname),
@@ -33,6 +36,16 @@ export default function TopNav() {
     localStorage.removeItem("role");
     navigate("/login");
   };
+
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, []);
 
   const go = (path) => {
     navigate(path);
@@ -99,16 +112,42 @@ export default function TopNav() {
           )}
         </nav>
         <div className="topnav-right">
-          <button className="topnav-cta" onClick={() => go("/transactions/new")}>
-            + Add
+          <div className="topnav-search">
+            <input
+              placeholder="Search"
+              className="topnav-searchInput"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const q = e.target.value.trim();
+                  if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+                }
+              }}
+            />
+          </div>
+
+          <button className="topnav-iconButton" title="Notifications">
+            <span className="bell">🔔</span>
+            <span className="badge">3</span>
           </button>
 
-          <button className="topnav-logout" onClick={logout}>
-            Logout
-          </button>
+          <div className="topnav-user" ref={userMenuRef}>
+            <button
+              className="topnav-userBtn"
+              onClick={() => setUserMenuOpen((s) => !s)}
+              aria-expanded={userMenuOpen}
+            >
+              <div className="topnav-avatar">{(username || "U")[0].toUpperCase()}</div>
+              <div className="topnav-username">{username}</div>
+            </button>
 
-          <div className="topnav-user">
-            <div className="topnav-avatar">F</div>
+            {userMenuOpen && (
+              <div className="topnav-userMenu">
+                <button className="topnav-userMenuItem" onClick={() => go("/profile")}>Profile</button>
+                <button className="topnav-userMenuItem" onClick={() => go("/settings")}>Settings</button>
+                <div className="topnav-userMenuDivider" />
+                <button className="topnav-userMenuItem logout" onClick={logout}>Logout</button>
+              </div>
+            )}
           </div>
         </div>
       </header>

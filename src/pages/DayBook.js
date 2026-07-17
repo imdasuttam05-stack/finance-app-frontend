@@ -129,12 +129,12 @@ export default function DayBook() {
 
         <div className="card" style={{ padding: 18 }}>
           <div className="card-title">Total DR</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "#991b1b" }}>₹ {drTotal.toFixed(2)}</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#dc2626" }}>₹ {drTotal.toFixed(2)}</div>
         </div>
 
         <div className="card" style={{ padding: 18 }}>
           <div className="card-title">Total CR</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "#1e40af" }}>₹ {crTotal.toFixed(2)}</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#16a34a" }}>₹ {crTotal.toFixed(2)}</div>
         </div>
 
         {data.length > 0 && (
@@ -208,10 +208,10 @@ export default function DayBook() {
                                   <div style={{ fontWeight: 600 }}>{t.note || t.type}</div>
                                   <div style={{ fontSize: 11, opacity: 0.6 }}>{t.personId?.name || ""}</div>
                                 </td>
-                                <td style={{ padding: 10, textAlign: "right", fontSize: 13, backgroundColor: isDrTx ? "#fecaca" : "transparent", color: "#991b1b" }}>
+                                <td style={{ padding: 10, textAlign: "right", fontSize: 13, backgroundColor: isDrTx ? "#fee2e2" : "transparent", color: "#dc2626" }}>
                                   {isDrTx ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
                                 </td>
-                                <td style={{ padding: 10, textAlign: "right", fontSize: 13, backgroundColor: !isDrTx ? "#bfdbfe" : "transparent", color: "#1e40af" }}>
+                                <td style={{ padding: 10, textAlign: "right", fontSize: 13, backgroundColor: !isDrTx ? "#dcfce7" : "transparent", color: "#16a34a" }}>
                                   {!isDrTx ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
                                 </td>
                                 <td style={{ padding: 10 }}>

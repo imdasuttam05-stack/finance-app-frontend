@@ -7,9 +7,9 @@ export default function Dashboard() {
   const [categoryData, setCategoryData] = useState({});
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState("");
 
   const navigate = useNavigate();
-  const [deleting, setDeleting] = useState("");
 
   const deleteTransaction = async (id) => {
     const confirmed = window.confirm(

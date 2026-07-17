@@ -31,7 +31,25 @@ export default function MonthlyReport() {
 
   const toNumber = (v) => (isNaN(Number(v)) ? 0 : Number(v));
 
-  const total = filtered.reduce((s, t) => s + toNumber(t.amount), 0);
+  const getDrCr = (t) => {
+    if (t.drcr === "DR" || t.drcr === "CR") return t.drcr;
+    if (t.type === "received" || t.type === "income") return "CR";
+    if (t.type === "payment" || t.type === "expense") return "DR";
+    if (t.type === "loan" || t.type === "investment") {
+      return t.subType === "liability" ? "CR" : "DR";
+    }
+    return "DR";
+  };
+
+  const totalDebit = filtered
+    .filter((t) => getDrCr(t) === "DR")
+    .reduce((s, t) => s + toNumber(t.amount), 0);
+
+  const totalCredit = filtered
+    .filter((t) => getDrCr(t) === "CR")
+    .reduce((s, t) => s + toNumber(t.amount), 0);
+
+  const total = totalDebit - totalCredit;
 
   const byCategory = filtered.reduce((acc, t) => {
     const key = t.category || (t.type || "other");

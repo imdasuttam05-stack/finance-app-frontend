@@ -53,7 +53,6 @@ export default function DayBook() {
 
   const drTotal = data.reduce((s, t) => s + (isDR(t) ? toNumber(t.amount) : 0), 0);
   const crTotal = data.reduce((s, t) => s + (!isDR(t) ? toNumber(t.amount) : 0), 0);
-  const total = drTotal + crTotal;
 
   // Group by category/subledger
   const groupedByLedger = data.reduce((acc, t) => {

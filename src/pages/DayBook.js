@@ -33,8 +33,13 @@ export default function DayBook() {
   const toNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
 
   const isDR = (transaction) => {
+    if (!transaction) return false;
+    if (transaction.drcr) {
+      return String(transaction.drcr).toUpperCase() === "DR";
+    }
+
     const type = (transaction.type || "").toLowerCase();
-    return ["loan", "expense", "given", "debit", "payment"].includes(type) || transaction.type === "DR";
+    return ["loan", "expense", "given", "debit", "payment"].includes(type) || String(transaction.type).toUpperCase() === "DR";
   };
 
   const handleDelete = async (id) => {

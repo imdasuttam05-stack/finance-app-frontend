@@ -126,6 +126,11 @@ export default function DayBook() {
                     <td style={{ padding: 12 }}>
                       <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
                       <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
+                      {(t.category || t.subCategory) && (
+                        <div style={{ fontSize: 11, opacity: 0.5, marginTop: 4, color: "#666" }}>
+                          Ledger: {[t.category, t.subCategory].filter(Boolean).join(" > ")}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: 12, textAlign: "right", backgroundColor: isDR(t) ? "#fecaca" : "transparent" }}>
                       {isDR(t) ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}

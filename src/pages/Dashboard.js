@@ -6,7 +6,6 @@ export default function Dashboard() {
   const [summary, setSummary] = useState({});
   const [categoryData, setCategoryData] = useState({});
   const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState("");
 
   const navigate = useNavigate();
@@ -35,8 +34,6 @@ export default function Dashboard() {
 
     const fetchData = async () => {
       try {
-        setLoading(true);
-
         const [summaryRes, categoryRes, txnRes] = await Promise.all([
           API.get("/transactions/summary"),
           API.get("/transactions/category-summary"),
@@ -60,7 +57,6 @@ export default function Dashboard() {
 
       } finally {
         if (!isMounted) return;
-        setLoading(false);
       }
     };
 

@@ -129,7 +129,27 @@ export default function LedgerPage() {
 
           }
 
-          // EXPENSE
+          // LOAN / INVESTMENT
+          else if (
+            t.type === "loan" ||
+            t.type === "investment"
+          ) {
+            if (t.subType === "liability") {
+              running -=
+                Number(
+                  t.amount || 0
+                );
+              drcr = "CR";
+            } else {
+              running +=
+                Number(
+                  t.amount || 0
+                );
+              drcr = "DR";
+            }
+          }
+
+          // EXPENSE / fallback
           else {
 
             running +=

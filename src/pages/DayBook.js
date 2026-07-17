@@ -31,6 +31,11 @@ export default function DayBook() {
 
   const toNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
 
+  const isDR = (transaction) => {
+    const type = (transaction.type || "").toLowerCase();
+    return ["loan", "expense", "given", "debit", "payment"].includes(type) || transaction.type === "DR";
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this transaction?")) return;
     try {
@@ -45,7 +50,9 @@ export default function DayBook() {
     }
   };
 
-  const total = data.reduce((s, t) => s + toNumber(t.amount), 0);
+  const drTotal = data.reduce((s, t) => s + (isDR(t) ? toNumber(t.amount) : 0), 0);
+  const crTotal = data.reduce((s, t) => s + (!isDR(t) ? toNumber(t.amount) : 0), 0);
+  const total = drTotal + crTotal;
 
   return (
     <div className="page">
@@ -71,6 +78,16 @@ export default function DayBook() {
         <div className="card-title">Summary</div>
 
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div className="card" style={{ padding: 12, minWidth: 160, backgroundColor: "#fee2e2" }}>
+            <div style={{ fontSize: 12, opacity: 0.7 }}>DR (Debit)</div>
+            <div style={{ fontWeight: 800, fontSize: 20, color: "#991b1b" }}>₹ {drTotal.toFixed(2)}</div>
+          </div>
+          
+          <div className="card" style={{ padding: 12, minWidth: 160, backgroundColor: "#dbeafe" }}>
+            <div style={{ fontSize: 12, opacity: 0.7 }}>CR (Credit)</div>
+            <div style={{ fontWeight: 800, fontSize: 20, color: "#1e40af" }}>₹ {crTotal.toFixed(2)}</div>
+          </div>
+
           <div className="card" style={{ padding: 12, minWidth: 160 }}>
             <div style={{ fontSize: 12, opacity: 0.7 }}>Total</div>
             <div style={{ fontWeight: 800, fontSize: 20 }}>₹ {total.toFixed(2)}</div>
@@ -96,7 +113,8 @@ export default function DayBook() {
                 <tr>
                   <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "left" }}>Time</th>
                   <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "left" }}>Details</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right" }}>Amount</th>
+                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right", backgroundColor: "#fee2e2" }}>DR</th>
+                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right", backgroundColor: "#dbeafe" }}>CR</th>
                   <th style={{ borderBottom: "1px solid #ddd", padding: 12 }}>Actions</th>
                 </tr>
               </thead>
@@ -109,7 +127,12 @@ export default function DayBook() {
                       <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
                       <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
                     </td>
-                    <td style={{ padding: 12, textAlign: "right" }}>₹ {toNumber(t.amount).toFixed(2)}</td>
+                    <td style={{ padding: 12, textAlign: "right", backgroundColor: isDR(t) ? "#fecaca" : "transparent" }}>
+                      {isDR(t) ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
+                    </td>
+                    <td style={{ padding: 12, textAlign: "right", backgroundColor: !isDR(t) ? "#bfdbfe" : "transparent" }}>
+                      {!isDR(t) ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
+                    </td>
                     <td style={{ padding: 12 }}>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button className="btn secondary" onClick={() => navigate(`/edit/${t._id}`)}>Edit</button>

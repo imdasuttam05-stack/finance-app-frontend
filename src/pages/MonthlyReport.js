@@ -180,6 +180,11 @@ export default function MonthlyReport() {
                           <td style={{ padding: 12 }}>
                             <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
                             <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
+                            {(t.category || t.subCategory) && (
+                              <div style={{ fontSize: 11, opacity: 0.5, marginTop: 4, color: "#666" }}>
+                                Ledger: {[t.category, t.subCategory].filter(Boolean).join(" > ")}
+                              </div>
+                            )}
                           </td>
                           <td style={{ padding: 12, textAlign: "right" }}>
                             {drcr === "DR" ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
@@ -266,6 +271,11 @@ export default function MonthlyReport() {
                                 <td style={{ padding: 10, fontSize: 13 }}>
                                   <div style={{ fontWeight: 600 }}>{t.note || t.category || t.type}</div>
                                   <div style={{ fontSize: 11, opacity: 0.6 }}>{t.personId?.name || ""}</div>
+                                  {(t.category || t.subCategory) && (
+                                    <div style={{ fontSize: 10, opacity: 0.5, marginTop: 4, color: "#666" }}>
+                                      Ledger: {[t.category, t.subCategory].filter(Boolean).join(" > ")}
+                                    </div>
+                                  )}
                                 </td>
                                 <td style={{ padding: 10, textAlign: "right", fontSize: 13, backgroundColor: drcr === "DR" ? "#fecaca" : "transparent", color: "#991b1b" }}>
                                   {drcr === "DR" ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { API } from "../api";
+import { getEligibleAgainstEntries } from "../utils/transactionUtils";
 
 const expenseCategories = {
   food: ["groceries", "restaurant", "snacks"],
@@ -289,17 +290,11 @@ export default function EditTransaction() {
                       onChange={(e) => setForm({ ...form, againstId: e.target.value })}
                     >
                       <option value="">No against entry</option>
-                      {previousEntries
-                        .filter((entry) =>
-                          form.type === "payment"
-                            ? entry.type === "received"
-                            : entry.type === "payment"
-                        )
-                        .map((entry) => (
-                          <option key={entry._id} value={entry._id}>
-                            {new Date(entry.date).toLocaleDateString()} — ₹{entry.amount} — {entry.note || entry.category || entry.type}
-                          </option>
-                        ))}
+                      {getEligibleAgainstEntries(previousEntries, form.type, form.againstId).map((entry) => (
+                        <option key={entry._id} value={entry._id}>
+                          {new Date(entry.date).toLocaleDateString()} — ₹{entry.amount} — {entry.note || entry.category || entry.type}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </>

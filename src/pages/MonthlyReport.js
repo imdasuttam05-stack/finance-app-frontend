@@ -88,6 +88,16 @@ export default function MonthlyReport() {
         </div>
 
         <div className="card" style={{ padding: 18 }}>
+          <div className="card-title">Total DR</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "green" }}>₹ {totalDebit.toFixed(2)}</div>
+        </div>
+
+        <div className="card" style={{ padding: 18 }}>
+          <div className="card-title">Total CR</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "red" }}>₹ {totalCredit.toFixed(2)}</div>
+        </div>
+
+        <div className="card" style={{ padding: 18 }}>
           <div className="card-title">Category Breakdown</div>
           <div className="list" style={{ marginTop: 8 }}>
             {Object.keys(byCategory).length === 0 ? (

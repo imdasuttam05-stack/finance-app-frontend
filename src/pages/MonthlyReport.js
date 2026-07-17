@@ -127,20 +127,44 @@ export default function MonthlyReport() {
                 <tr>
                   <th style={{ borderBottom: "1px solid #ddd", padding: 12 }}>Date</th>
                   <th style={{ borderBottom: "1px solid #ddd", padding: 12 }}>Details</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right" }}>Amount</th>
+                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right" }}>DR</th>
+                  <th style={{ borderBottom: "1px solid #ddd", padding: 12, textAlign: "right" }}>CR</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((t) => (
-                  <tr key={t._id}>
-                    <td style={{ padding: 12 }}>{new Date(t.date).toLocaleDateString()}</td>
-                    <td style={{ padding: 12 }}>
-                      <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
-                      <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
-                    </td>
-                    <td style={{ padding: 12, textAlign: "right" }}>₹ {toNumber(t.amount).toFixed(2)}</td>
-                  </tr>
-                ))}
+                {filtered.map((t) => {
+                  const drcr = getDrCr(t);
+                  return (
+                    <tr key={t._id}>
+                      <td style={{ padding: 12 }}>{new Date(t.date).toLocaleDateString()}</td>
+                      <td style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 700 }}>{t.note || t.category || t.type}</div>
+                        <div style={{ fontSize: 12, opacity: 0.6 }}>{t.personId?.name || ""}</div>
+                      </td>
+                      <td style={{ padding: 12, textAlign: "right" }}>
+                        {drcr === "DR" ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
+                      </td>
+                      <td style={{ padding: 12, textAlign: "right" }}>
+                        {drcr === "CR" ? `₹ ${toNumber(t.amount).toFixed(2)}` : "-"}
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <td colSpan={2} style={{ padding: 12, fontWeight: 700, borderTop: "1px solid #ddd" }}>Totals</td>
+                  <td style={{ padding: 12, textAlign: "right", fontWeight: 700, borderTop: "1px solid #ddd", color: "green" }}>
+                    ₹ {totalDebit.toFixed(2)}
+                  </td>
+                  <td style={{ padding: 12, textAlign: "right", fontWeight: 700, borderTop: "1px solid #ddd", color: "red" }}>
+                    ₹ {totalCredit.toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2} style={{ padding: 12, fontWeight: 700 }}>Balance</td>
+                  <td colSpan={2} style={{ padding: 12, textAlign: "right", fontWeight: 700 }}>
+                    ₹ {Math.abs(total).toFixed(2)} {total >= 0 ? "DR" : "CR"}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

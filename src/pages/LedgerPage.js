@@ -505,6 +505,12 @@ export default function LedgerPage() {
 
                           {t.type}
 
+                          {t.type === "loan" && t.subType ? (
+                            <div style={{ marginTop: 4 }}>
+                              {t.subType === "asset" ? "Given" : "Taken"}
+                            </div>
+                          ) : null}
+
                           {t.againstId ? (
                             <div style={{ marginTop: 4 }}>
                               Against: {t.againstId.type || "entry"}

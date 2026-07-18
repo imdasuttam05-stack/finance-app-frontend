@@ -1,4 +1,5 @@
   import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { API } from "../api";
 import { getEligibleAgainstEntries } from "../utils/transactionUtils";
 
@@ -21,6 +22,8 @@ export default function AddTransaction() {
   const [persons, setPersons] = useState([]);
   const [saving, setSaving] = useState(false);
   const [previousEntries, setPreviousEntries] = useState([]);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [savedLedger, setSavedLedger] = useState(null);
 
   const [form, setForm] = useState({
     type: "income",
@@ -99,7 +102,19 @@ export default function AddTransaction() {
 
       await API.post("/transactions", payload);
 
-      alert("Saved ✔");
+      const selectedPerson = persons.find((p) => p._id === person);
+      if (person) {
+        setSavedLedger({
+          id: person,
+          name: selectedPerson?.name || "Selected ledger",
+        });
+        setSaveMessage(
+          `Saved successfully. Open ${selectedPerson?.name || "the selected ledger"} ledger.`
+        );
+      } else {
+        setSavedLedger(null);
+        setSaveMessage("Saved successfully.");
+      }
 
       setForm({
         type: "income",
@@ -388,6 +403,31 @@ export default function AddTransaction() {
         <button className="btn" onClick={submit} disabled={saving}>
           {saving ? "Saving…" : "Save Transaction"}
         </button>
+
+        {saveMessage && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: "1px solid #a7f3d0",
+              background: "#ecfdf3",
+              color: "#166534",
+            }}
+          >
+            <div>{saveMessage}</div>
+            {savedLedger && (
+              <div style={{ marginTop: 8 }}>
+                <Link
+                  to={`/ledger/${savedLedger.id}`}
+                  style={{ fontWeight: 700, color: "#2563eb" }}
+                >
+                  Open ledger: {savedLedger.name} (ID: {savedLedger.id})
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

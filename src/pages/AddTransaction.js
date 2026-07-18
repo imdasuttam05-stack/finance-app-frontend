@@ -74,6 +74,31 @@ export default function AddTransaction() {
     });
   };
 
+  const sendTransactionSms = (ledger, transaction) => {
+    if (!ledger?.mobile) {
+      alert("No mobile number found for this ledger.");
+      return;
+    }
+
+    const message = [
+      "Transaction saved",
+      `Date: ${transaction.date}`,
+      `Type: ${transaction.type}`,
+      `Amount: ₹${Number(transaction.amount || 0).toFixed(2)}`,
+      `Note: ${transaction.note || "-"}`,
+      `Ledger: ${ledger.name}`,
+    ].join("\n");
+
+    const shouldSend = window.confirm(
+      `Send this transaction details to ${ledger.name} on ${ledger.mobile} via SMS?`
+    );
+
+    if (!shouldSend) return;
+
+    const smsUrl = `sms:${ledger.mobile}?body=${encodeURIComponent(message)}`;
+    window.location.href = smsUrl;
+  };
+
   // 💾 SUBMIT
   const submit = async () => {
     try {
@@ -104,13 +129,23 @@ export default function AddTransaction() {
 
       const selectedPerson = persons.find((p) => p._id === person);
       if (person) {
-        setSavedLedger({
+        const ledgerInfo = {
           id: person,
           name: selectedPerson?.name || "Selected ledger",
-        });
+          mobile: selectedPerson?.mobile || "",
+        };
+
+        setSavedLedger(ledgerInfo);
         setSaveMessage(
-          `Saved successfully. Open ${selectedPerson?.name || "the selected ledger"} ledger.`
+          `Saved successfully. Open ${ledgerInfo.name} ledger.`
         );
+
+        sendTransactionSms(ledgerInfo, {
+          date: payload.date,
+          type: payload.type,
+          amount: payload.amount,
+          note: payload.note || "",
+        });
       } else {
         setSavedLedger(null);
         setSaveMessage("Saved successfully.");

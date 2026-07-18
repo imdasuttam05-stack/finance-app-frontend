@@ -19,11 +19,19 @@ export default function Dashboard() {
 
     try {
       setDeleting(id);
+
       await API.delete(`/transactions/${id}`);
-      setTransactions((prev) => prev.filter((item) => item._id !== id));
+
+      setTransactions((prev) =>
+        prev.filter((item) => item._id !== id)
+      );
     } catch (err) {
       console.error("Delete failed", err);
-      alert(err.response?.data?.error || "Failed to delete transaction");
+
+      alert(
+        err.response?.data?.error ||
+          "Failed to delete transaction"
+      );
     } finally {
       setDeleting("");
     }
@@ -34,7 +42,11 @@ export default function Dashboard() {
 
     const fetchData = async () => {
       try {
-        const [summaryRes, categoryRes, txnRes] = await Promise.all([
+        const [
+          summaryRes,
+          categoryRes,
+          txnRes,
+        ] = await Promise.all([
           API.get("/transactions/summary"),
           API.get("/transactions/category-summary"),
           API.get("/transactions"),
@@ -45,18 +57,17 @@ export default function Dashboard() {
         setSummary(summaryRes?.data || {});
         setCategoryData(categoryRes?.data || {});
         setTransactions(txnRes?.data || []);
-
       } catch (err) {
-        console.error("Dashboard load error:", err);
+        console.error(
+          "Dashboard load error:",
+          err
+        );
 
         if (!isMounted) return;
 
         setSummary({});
         setCategoryData({});
         setTransactions([]);
-
-      } finally {
-        if (!isMounted) return;
       }
     };
 
@@ -78,223 +89,315 @@ export default function Dashboard() {
 
   const net = income - expense;
 
-  const categoryPairs = Object.entries(categoryData || {})
-    .map(([k, v]) => [k, toNumber(v)])
-    .filter(([, v]) => v !== 0)
+  const categoryPairs = Object.entries(
+    categoryData || {}
+  )
+    .map(([key, value]) => [
+      key,
+      toNumber(value),
+    ])
+    .filter(([, value]) => value !== 0)
     .sort((a, b) => b[1] - a[1]);
 
-  return (
-    <div className="page">
+  const username =
+    localStorage.getItem("username") || "User";
 
-      {/* HEADER */}
-      <div className="page-header">
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ fontSize: 36 }}>📊</div>
+  return (
+    <div className="page dashboard-page">
+
+      {/* ================= HEADER ================= */}
+
+      <div className="page-header dashboard-header">
+
+        <div className="dashboard-title">
+
+          <div className="dashboard-icon">
+            📊
+          </div>
+
           <div>
             <h1>Dashboard</h1>
-            <p style={{ marginTop: 6 }}>Professional finance overview</p>
+
+            <p>
+              Professional finance overview
+            </p>
           </div>
+
         </div>
 
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button className="btn small" onClick={() => navigate('/transactions/new')}>+ Add Transaction</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: 900 }}>Welcome back</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>Quick snapshot</div>
+        <div className="dashboard-header-right">
+
+          <button
+            className="btn small add-transaction-btn"
+            onClick={() =>
+              navigate("/transactions/new")
+            }
+          >
+            + Add Transaction
+          </button>
+
+          <div className="welcome-user">
+
+            <div className="welcome-text">
+              <div className="welcome-title">
+                Welcome back
+              </div>
+
+              <div className="welcome-subtitle">
+                {username}
+              </div>
             </div>
-            <button className="topnav-userBtn" onClick={() => navigate('/profile')}>
-              <div className="topnav-avatar">{(localStorage.getItem('username')||'U')[0].toUpperCase()}</div>
+
+            <button
+              className="topnav-userBtn"
+              onClick={() =>
+                navigate("/profile")
+              }
+            >
+              <div className="topnav-avatar">
+                {username
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
             </button>
+
           </div>
+
         </div>
+
       </div>
 
-      {/* SUMMARY CARDS */}
-      <div style={styles.grid}>
+
+      {/* ================= SUMMARY CARDS ================= */}
+
+      <div className="summary-grid">
 
         <SummaryCard
           title="Income"
           value={income}
-          color="green"
-          onClick={() => navigate("/report/income")}
+          color="#16a34a"
+          onClick={() =>
+            navigate("/report/income")
+          }
         />
 
         <SummaryCard
           title="Expense"
           value={expense}
-          color="red"
-          onClick={() => navigate("/report/expense")}
+          color="#dc2626"
+          onClick={() =>
+            navigate("/report/expense")
+          }
         />
 
         <SummaryCard
           title="Net"
           value={net}
           color="#2563eb"
-          onClick={() => navigate("/report/net")}
+          onClick={() =>
+            navigate("/report/net")
+          }
         />
 
         <SummaryCard
           title="Investment"
           value={investment}
           color="#7c3aed"
-          onClick={() => navigate("/report/investment")}
+          onClick={() =>
+            navigate("/report/investment")
+          }
         />
 
         <SummaryCard
           title="Asset"
           value={asset}
-          color="green"
-          onClick={() => navigate("/report/asset")}
+          color="#16a34a"
+          onClick={() =>
+            navigate("/report/asset")
+          }
         />
 
         <SummaryCard
           title="Liability"
           value={liability}
-          color="red"
-          onClick={() => navigate("/report/liability")}
+          color="#dc2626"
+          onClick={() =>
+            navigate("/report/liability")
+          }
         />
 
       </div>
 
-      {/* QUICK REPORTS */}
-      <div style={styles.quickGrid}>
+
+      {/* ================= QUICK REPORTS ================= */}
+
+      <div className="quick-grid">
 
         <div
-          style={styles.quickCard}
-          onClick={() => navigate("/daybook")}
+          className="quick-card"
+          onClick={() =>
+            navigate("/daybook")
+          }
         >
           <h2>📘 Day Book</h2>
 
           <p>
-            Full daily transaction report with
-            edit & delete actions.
+            Full daily transaction report
+            with edit & delete actions.
           </p>
         </div>
 
+
         <div
-          style={styles.quickCard}
-          onClick={() => navigate("/monthly")}
+          className="quick-card"
+          onClick={() =>
+            navigate("/monthly")
+          }
         >
           <h2>📅 Monthly Report</h2>
 
           <p>
-            Complete monthly financial statement
-            with filters.
+            Complete monthly financial
+            statement with filters.
           </p>
         </div>
 
+
         <div
-          style={styles.quickCard}
-          onClick={() => navigate("/ledger-master")}
+          className="quick-card"
+          onClick={() =>
+            navigate("/ledger-master")
+          }
         >
           <h2>📒 Ledger Book</h2>
 
           <p>
-            Professional ledger management &
-            balance tracking.
+            Professional ledger management
+            & balance tracking.
           </p>
         </div>
 
       </div>
 
-      {/* RECENT TRANSACTIONS */}
-      <div className="card">
+
+      {/* ================= RECENT TRANSACTIONS ================= */}
+
+      <div className="card transactions-card">
 
         <div className="card-title">
           Recent Transactions
         </div>
 
         {transactions.length === 0 ? (
-          <p>No transactions found</p>
+
+          <p className="empty-state">
+            No transactions found
+          </p>
+
         ) : (
-          transactions.slice(0, 10).map((t) => {
 
-            const isIncome =
-              t.type === "income" ||
-              t.subType === "asset";
+          <div className="transactions-list">
 
-            return (
-              <div
-                key={t._id}
-                style={styles.transactionRow}
-              >
+            {transactions
+              .slice(0, 10)
+              .map((t) => {
 
-                {/* LEFT */}
-                <div>
+                const isIncome =
+                  t.type === "income" ||
+                  t.subType === "asset";
 
-                  <div style={{ fontWeight: 700 }}>
-                    {t.note || t.category || t.type}
-                  </div>
+                return (
 
                   <div
-                    style={{
-                      fontSize: 12,
-                      opacity: 0.6,
-                    }}
+                    key={t._id}
+                    className="transaction-row"
                   >
-                    {new Date(t.date).toLocaleDateString()}
+
+                    <div className="transaction-info">
+
+                      <div className="transaction-name">
+                        {t.note ||
+                          t.category ||
+                          t.type}
+                      </div>
+
+                      <div className="transaction-date">
+                        {new Date(
+                          t.date
+                        ).toLocaleDateString()}
+                      </div>
+
+                    </div>
+
+
+                    <div className="transaction-right">
+
+                      <strong
+                        className={
+                          isIncome
+                            ? "transaction-income"
+                            : "transaction-expense"
+                        }
+                      >
+                        ₹{" "}
+                        {toNumber(
+                          t.amount
+                        ).toFixed(2)}
+                      </strong>
+
+
+                      <div className="action-buttons">
+
+                        <button
+                          className="btn secondary"
+                          onClick={() =>
+                            navigate(
+                              `/edit/${t._id}`
+                            )
+                          }
+                        >
+                          Edit
+                        </button>
+
+
+                        <button
+                          className="btn danger"
+                          onClick={() =>
+                            deleteTransaction(
+                              t._id
+                            )
+                          }
+                          disabled={
+                            deleting === t._id
+                          }
+                        >
+                          {deleting === t._id
+                            ? "Deleting…"
+                            : "Delete"}
+                        </button>
+
+                      </div>
+
+                    </div>
+
                   </div>
 
-                </div>
+                );
+              })}
 
-                {/* RIGHT */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
+          </div>
 
-                  <strong
-                    style={{
-                      color: isIncome ? "green" : "red",
-                      minWidth: 120,
-                      textAlign: "right",
-                    }}
-                  >
-                    ₹ {toNumber(t.amount).toFixed(2)}
-                  </strong>
-
-                  <div
-                    className="action-buttons"
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      alignItems: "center",
-                    }}
-                  >
-                    <button
-                      className="btn secondary"
-                      onClick={() =>
-                        navigate(`/edit/${t._id}`)
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn danger"
-                      onClick={() => deleteTransaction(t._id)}
-                      disabled={deleting === t._id}
-                    >
-                      {deleting === t._id ? "Deleting…" : "Delete"}
-                    </button>
-                  </div>
-
-                </div>
-
-              </div>
-            );
-          })
         )}
 
       </div>
 
-      {/* CATEGORY BREAKDOWN */}
-      <div style={styles.bottomGrid}>
+
+      {/* ================= BOTTOM SECTION ================= */}
+
+      <div className="bottom-grid">
 
         {/* EXPENSE BREAKDOWN */}
+
         <div className="card">
 
           <div className="card-title">
@@ -304,36 +407,55 @@ export default function Dashboard() {
           <div className="list">
 
             {categoryPairs.length === 0 ? (
-              <div className="list-item">
-                <span>No expense data</span>
-                <strong>₹ 0</strong>
-              </div>
-            ) : (
-              categoryPairs.slice(0, 10).map(([key, value]) => (
-                <div
-                  className="list-item"
-                  key={key}
-                >
-                  <span
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    {key}
-                  </span>
 
-                  <strong>
-                    ₹ {value.toFixed(2)}
-                  </strong>
-                </div>
-              ))
+              <div className="list-item">
+                <span>
+                  No expense data
+                </span>
+
+                <strong>
+                  ₹ 0
+                </strong>
+              </div>
+
+            ) : (
+
+              categoryPairs
+                .slice(0, 10)
+                .map(([key, value]) => (
+
+                  <div
+                    className="list-item"
+                    key={key}
+                  >
+
+                    <span
+                      style={{
+                        textTransform:
+                          "capitalize",
+                      }}
+                    >
+                      {key}
+                    </span>
+
+                    <strong>
+                      ₹{" "}
+                      {value.toFixed(2)}
+                    </strong>
+
+                  </div>
+
+                ))
+
             )}
 
           </div>
 
         </div>
 
-        {/* HEALTH */}
+
+        {/* FINANCIAL HEALTH */}
+
         <div className="card">
 
           <div className="card-title">
@@ -343,31 +465,54 @@ export default function Dashboard() {
           <div className="list">
 
             <div className="list-item">
-              <span>Saving Rate</span>
+
+              <span>
+                Saving Rate
+              </span>
 
               <strong>
                 {income > 0
-                  ? `${((net / income) * 100).toFixed(1)}%`
+                  ? `${(
+                      (net / income) *
+                      100
+                    ).toFixed(1)}%`
                   : "0%"}
               </strong>
+
             </div>
 
+
             <div className="list-item">
-              <span>Expense Ratio</span>
+
+              <span>
+                Expense Ratio
+              </span>
 
               <strong>
                 {income > 0
-                  ? `${((expense / income) * 100).toFixed(1)}%`
+                  ? `${(
+                      (expense / income) *
+                      100
+                    ).toFixed(1)}%`
                   : "0%"}
               </strong>
+
             </div>
 
+
             <div className="list-item">
-              <span>Loan Balance</span>
+
+              <span>
+                Loan Balance
+              </span>
 
               <strong>
-                ₹ {(asset - liability).toFixed(2)}
+                ₹{" "}
+                {(
+                  asset - liability
+                ).toFixed(2)}
               </strong>
+
             </div>
 
           </div>
@@ -380,7 +525,11 @@ export default function Dashboard() {
   );
 }
 
-/* SUMMARY CARD */
+
+/* =====================================================
+   SUMMARY CARD
+===================================================== */
+
 function SummaryCard({
   title,
   value,
@@ -388,98 +537,30 @@ function SummaryCard({
   onClick,
 }) {
   return (
+
     <div
+      className="summary-card"
       onClick={onClick}
       style={{
-        ...styles.card,
-        borderLeft: `6px solid ${color}`,
+        borderLeft:
+          `5px solid ${color}`,
       }}
     >
 
-      <div
-        style={{
-          fontSize: 14,
-          fontWeight: 700,
-          marginBottom: 20,
-          textTransform: "uppercase",
-          opacity: 0.7,
-        }}
-      >
+      <div className="summary-card-title">
         {title}
       </div>
 
-      <div
-        style={{
-          fontSize: 42,
-          fontWeight: "bold",
-        }}
-      >
-        ₹ {Number(value || 0).toFixed(2)}
+      <div className="summary-card-value">
+        ₹{" "}
+        {Number(value || 0).toFixed(2)}
       </div>
 
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 13,
-          opacity: 0.6,
-        }}
-      >
+      <div className="summary-card-link">
         Click to view details →
       </div>
 
     </div>
+
   );
 }
-
-/* STYLES */
-const styles = {
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit,minmax(300px,1fr))",
-    gap: 20,
-    marginBottom: 30,
-  },
-
-  card: {
-    background: "#fff",
-    borderRadius: 20,
-    padding: 25,
-    cursor: "pointer",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-  },
-
-  quickGrid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit,minmax(280px,1fr))",
-    gap: 20,
-    marginBottom: 30,
-  },
-
-  quickCard: {
-    background: "#fff",
-    padding: 25,
-    borderRadius: 20,
-    cursor: "pointer",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-  },
-
-  bottomGrid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit,minmax(350px,1fr))",
-    gap: 20,
-    marginTop: 20,
-  },
-
-  transactionRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "14px 0",
-    borderBottom: "1px solid #eee",
-  },
-
-};

@@ -33,28 +33,35 @@ export default function Login() {
       setLoading(true);
       setMessage("");
 
-      const res = await API.post("/auth/login", {
+      const payload = {
         username: loginUsername.trim(),
         password: loginPassword.trim(),
-      });
+      };
 
-      if (res.data.success) {
-        const token = `user-${res.data.user.id}`;
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", res.data.user.userId);
-        localStorage.setItem("username", res.data.user.username);
-        localStorage.setItem("userMobile", res.data.user.mobile);
-        localStorage.setItem("isApproved", String(res.data.user.isApproved));
-        localStorage.setItem("isAdmin", String(res.data.user.isAdmin || false));
-        localStorage.setItem("role", res.data.user.role || "user");
+      console.debug("Login payload:", payload);
+      const res = await API.post("/auth/login", payload);
 
-        setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
-
-        setTimeout(() => {
-          window.location.href = res.data.user.isAdmin ? "/admin-approve" : "/dashboard";
-        }, 1500);
+      if (!res.data.success) {
+        setMessage(res.data.error || "Login failed. Please try again.");
+        return;
       }
+
+      const token = `user-${res.data.user.id}`;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", res.data.user.userId);
+      localStorage.setItem("username", res.data.user.username);
+      localStorage.setItem("userMobile", res.data.user.mobile);
+      localStorage.setItem("isApproved", String(res.data.user.isApproved));
+      localStorage.setItem("isAdmin", String(res.data.user.isAdmin || false));
+      localStorage.setItem("role", res.data.user.role || "user");
+
+      setMessage(`Login successful! Your User ID: ${res.data.user.userId}`);
+
+      setTimeout(() => {
+        window.location.href = res.data.user.isAdmin ? "/admin-approve" : "/dashboard";
+      }, 1500);
     } catch (err) {
+      console.error("Login error response:", err.response?.data || err.message || err);
       setMessage(err.response?.data?.error || "Login failed. Please try again.");
     } finally {
       setLoading(false);

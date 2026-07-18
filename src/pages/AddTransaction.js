@@ -74,29 +74,21 @@ export default function AddTransaction() {
     });
   };
 
-  const sendTransactionSms = (ledger, transaction) => {
-    if (!ledger?.mobile) {
-      alert("No mobile number found for this ledger.");
-      return;
+  const sendTransactionSms = async (ledger, transaction) => {
+    if (!ledger?.mobile) return;
+
+    try {
+      await API.post("/send-sms", {
+        phoneNumber: ledger.mobile,
+        ledgerName: ledger.name,
+        date: transaction.date,
+        type: transaction.type,
+        amount: transaction.amount,
+        note: transaction.note || "-",
+      });
+    } catch (err) {
+      console.error("SMS send failed:", err);
     }
-
-    const message = [
-      "Transaction saved",
-      `Date: ${transaction.date}`,
-      `Type: ${transaction.type}`,
-      `Amount: ₹${Number(transaction.amount || 0).toFixed(2)}`,
-      `Note: ${transaction.note || "-"}`,
-      `Ledger: ${ledger.name}`,
-    ].join("\n");
-
-    const shouldSend = window.confirm(
-      `Send this transaction details to ${ledger.name} on ${ledger.mobile} via SMS?`
-    );
-
-    if (!shouldSend) return;
-
-    const smsUrl = `sms:${ledger.mobile}?body=${encodeURIComponent(message)}`;
-    window.location.href = smsUrl;
   };
 
   // 💾 SUBMIT
@@ -140,7 +132,7 @@ export default function AddTransaction() {
           `Saved successfully. Open ${ledgerInfo.name} ledger.`
         );
 
-        sendTransactionSms(ledgerInfo, {
+        await sendTransactionSms(ledgerInfo, {
           date: payload.date,
           type: payload.type,
           amount: payload.amount,
